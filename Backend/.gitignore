@@ -1,0 +1,9 @@
+*.pyc
+__pychache__
+.history/
+.vscode/
+.mypy_cache/
+**/web
+.flake8
+mlruns
+venv
