@@ -1,49 +1,77 @@
 import "./Login.scss";
+import React, {useState} from 'react';
+import { useNavigate } from "react-router-dom";
 
-let username = "{username from input}";
-// let password = "{password from input}";
 const Login = () => {
+  let Navigate = useNavigate;
+  //username storage
+  const [username, setUsername]=useState(null);
+  //password storage
+  const [password, setPassword]=useState(null);
 
-  const getLogin = () =>{
+  //on button press, call getLogin
+  const getLogin = () => {
     //return login info
-
+    console.log("username: " + username + " password: " + password);
   }
-
-//   setUsername(e) {
-//     this.setState({
-//         username: e.target.value
-//     });
-//   }
+  
+  //To do: add a way to route to the register page
+  // const goToRegisterPage = () => {
+  //   let path = "/";
+  //   Navigate(path);
+  // }
+  
+  function updateUsername(e) {
+    setUsername(e.target.value);
+    //console.log("username: " + username);
+  }
+  
+  function updatePassword(e) {
+    setPassword(e.target.value);
+    //console.log("password: " + password);
+  }
   
   return (
     <div className="login-container">
       <div className="header-container">
-        <h1 className="background">
-          Sign In
+        <h1 className="background-container">
+          <h1 className="loginPanel-container">
+            <p style={{ marginBottom: '30px' }}>Sign In</p>
+
             {/* username login field */}
             <div className="input-container">
-                <label>Username </label>
                 <input 
-                    type="text" 
-                    id = "username"
+                    type="text"
                     required placeholder="Username"
-                    // TODO: create on change functionality, using setUsername function to update username variable
-                    // onChange={ 
-                    //     (e) => this.setUsername(e)
-                    // }
+                    onChange= { 
+                      updateUsername
+                    }
                 />
             </div>
+
+            <p style={{ marginBottom: '20px' }}></p>
 
             {/* password login field */}
             <div className="input-container">
-                <label>Password </label>
                 <input 
-                    type="text" 
-                    name="username" 
+                    type="text"
                     required placeholder="Password"
+                    onChange= {
+                      updatePassword
+                    }
                 />
             </div>
 
+            <button onClick={getLogin}>
+              Sign In
+            </button>
+  
+            <p style={{marginTop: "50px", fontSize: 15, color: "lightblue"}}>
+                {/* <link to = {goToRegisterPage}>
+                  Don't have an account? Register
+                </link> */}
+            </p>
+          </h1>
         </h1>
       </div>
     </div>
