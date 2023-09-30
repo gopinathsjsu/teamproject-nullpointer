@@ -1,9 +1,7 @@
 import "./Login.scss";
-import React, {useState} from 'react';
-import { useNavigate } from "react-router-dom";
+import React, {useState} from "react";
 
 const Login = () => {
-  let Navigate = useNavigate;
   //username storage
   const [username, setUsername]=useState(null);
   //password storage
@@ -12,6 +10,7 @@ const Login = () => {
   //on button press, call getLogin
   const getLogin = () => {
     //return login info
+    // implement backend to login (verify if account exists && if not, give error)
     console.log("username: " + username + " password: " + password);
   }
   
@@ -35,43 +34,47 @@ const Login = () => {
     <div className="login-container">
       <div className="header-container">
         <h1 className="background-container">
-          <h1 className="loginPanel-container">
-            <p style={{ marginBottom: '30px' }}>Sign In</p>
+          <div className="loginPanel-container">
+            <p style={{ marginBottom: "30px" }}>Sign In</p>
 
             {/* username login field */}
             <div className="input-container">
                 <input 
                     type="text"
-                    required placeholder="Username"
+                    required placeholder=" Username"
                     onChange= { 
                       updateUsername
                     }
                 />
             </div>
 
-            <p style={{ marginBottom: '20px' }}></p>
+            <p style={{ marginBottom: "20px"}}></p>
 
             {/* password login field */}
             <div className="input-container">
                 <input 
                     type="text"
-                    required placeholder="Password"
+                    className="pw"
+                    required placeholder=" Password"
                     onChange= {
                       updatePassword
                     }
                 />
             </div>
-
+            
+            <p style={{ marginBottom: "20px"}}></p>
             <button onClick={getLogin}>
               Sign In
             </button>
   
-            <p style={{marginTop: "50px", fontSize: 15, color: "lightblue"}}>
-                {/* <link to = {goToRegisterPage}>
-                  Don't have an account? Register
-                </link> */}
+            <p style={{marginTop: "100px"}}>
+
+              {/* link to access register page*/}
+              <a href="/register" className="link">
+                Don't have an account? Register
+              </a>
             </p>
-          </h1>
+          </div>
         </h1>
       </div>
     </div>

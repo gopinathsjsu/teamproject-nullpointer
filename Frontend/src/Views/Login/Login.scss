@@ -41,4 +41,18 @@
         font-size: 15px;
         background: #161616;
     }
+
+    input.pw {
+      -webkit-text-security: disc;
+    }
+    
+    .link {
+      color: #3284ff;
+      text-decoration: underline;
+      font-size: 15px;
+    }
+    
+    .link:visited {
+      text-decoration: none;
+    }
   }
