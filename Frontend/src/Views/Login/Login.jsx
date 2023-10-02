@@ -14,12 +14,6 @@ const Login = () => {
     console.log("username: " + username + " password: " + password);
   }
   
-  //To do: add a way to route to the register page
-  // const goToRegisterPage = () => {
-  //   let path = "/";
-  //   Navigate(path);
-  // }
-  
   function updateUsername(e) {
     setUsername(e.target.value);
     //console.log("username: " + username);

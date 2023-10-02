@@ -2,6 +2,30 @@ import "../Login/Login.scss"; //reuse Login.scss formatting (similar elements wi
 import React, {useState} from "react";
 
 const Register = () => {
+  const [username, setUsername]=useState(null);
+  const [password, setPassword]=useState(null);
+  const [confirmPassword, setConfirm]=useState(null);
+
+  function updateUsername(e) {
+    setUsername(e.target.value);
+    //console.log("username: " + username);
+  }
+  
+  function updatePassword(e) {
+    setPassword(e.target.value);
+    //console.log("password: " + password);
+  }
+
+  function updateConfirm(e) {
+    setConfirm(e.target.value);
+  }
+
+  function register() {
+    if(password == confirmPassword) {
+        // implement backend to register 
+        console.log("username: " + username + " password: " + password);
+    }
+  }
 
     return (
         <div className="login-container">
@@ -16,7 +40,7 @@ const Register = () => {
                         type="text"
                         required placeholder=" Username"
                         onChange= { 
-                          null
+                          updateUsername
                         }
                     />
                 </div>
@@ -30,7 +54,7 @@ const Register = () => {
                         className="pw"
                         required placeholder=" Password"
                         onChange= {
-                          null
+                          updatePassword
                         }
                     />
                 </div>
@@ -44,13 +68,13 @@ const Register = () => {
                         className="pw"
                         required placeholder=" Confirm Password"
                         onChange= {
-                          null
+                          updateConfirm
                         }
                     />
                 </div>
 
                 <p style={{ marginBottom: "20px"}}></p>
-                <button onClick={null}>
+                <button onClick={register}>
                   Register
                 </button>
       
