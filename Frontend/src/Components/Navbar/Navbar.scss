@@ -1,0 +1,32 @@
+.navbar{
+  &-container{
+    position: relative;
+    padding:1%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    .left-content{
+      display: flex;
+      flex-direction: row;
+      width: 50%;
+      justify-content: space-between;
+    }
+    .right-content {
+      width: 50%;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+  &-container::after{
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.75);
+    content: '';
+    display: block;
+    height: 70px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: -1;
+    
+  }
+}
