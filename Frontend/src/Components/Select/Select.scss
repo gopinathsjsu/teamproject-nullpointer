@@ -1,0 +1,9 @@
+.select-container {
+  display: flex;
+  flex-direction: column;
+  select{
+    padding: 4%;
+    border-radius: 4px;
+    font-family: 'AR One Sans', sans-serif;
+  }
+}
