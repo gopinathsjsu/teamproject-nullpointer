@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=AR+One+Sans&family=Montserrat:wght@400;700&display=swap');
+
 button {
   background-color: #ff0000;
   color: white;
@@ -8,6 +10,9 @@ button {
 }
 
 body {
+  background-color: black;
+  color: white;
+  margin: 0;
   padding : 0;
-  margin : 0;
+  font-family: 'AR One Sans', sans-serif;
 }

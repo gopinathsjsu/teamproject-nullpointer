@@ -78,7 +78,7 @@ const Register = () => {
                   Register
                 </button>
       
-                <p style={{marginTop: "27px"}}>
+                <p style={{marginTop: "7px"}}>
     
                   {/* link to access register page*/}
                   <a href="/login" className="link">

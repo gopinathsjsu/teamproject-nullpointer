@@ -4,7 +4,7 @@ import store from './Redux';
 import Dashboard from './Views/Dashboard/Dashboard';
 import Login from './Views/Login/Login';
 import Register from './Views/Register/Register';
-import Navbar from './Components/Navbar';
+import Navbar from './Components/Navbar/Navbar';
 import './Styles/index.scss'
 
 const router = createBrowserRouter([

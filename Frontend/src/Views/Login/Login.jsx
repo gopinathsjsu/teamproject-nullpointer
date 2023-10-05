@@ -61,7 +61,7 @@ const Login = () => {
               Sign In
             </button>
   
-            <p style={{marginTop: "100px"}}>
+            <p style={{marginTop: "84px"}}>
 
               {/* link to access register page*/}
               <a href="/register" className="link">
