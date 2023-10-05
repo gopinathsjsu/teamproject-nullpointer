@@ -16,4 +16,6 @@ def fetch_movie_showtimes():
         "message": rec["message"]
     }
 
+# @resource.route('/api/create_account', methods=['POST'])
+# def create_account(username, password):
     return jsonify(dummy)

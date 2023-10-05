@@ -25,9 +25,12 @@ const Navbar = () => {
         />
       </div>
       <div className='right-content'>
-        <Button onClick={handleLoginOrRegister} type={"button-primary"}>
+        <a href="/register" className="link">
           Login/Register
-        </Button>
+        </a>
+        {/* <Button onClick={handleLoginOrRegister} type={"button-primary"}>
+          Login/Register
+        </Button> */}
       </div>
     </div>
   )
