@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [currentUser, setUser] = useState('');
   const [error, setError] = useState('');
 
   //username storage
@@ -25,8 +24,8 @@ const Login = () => {
     })
     .then((resp) => {
       if(resp.ok) {
-        setUser(user);
-        console.log(currentUser);
+        localStorage.setItem('user', JSON.stringify(user));
+        console.log(localStorage.getItem('user'));
         console.log('logged in successfully');
         navigate("/");
       }
