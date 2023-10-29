@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 const Register = () => {
   const [username, setUsername]=useState('');
   const [password, setPassword]=useState('');
-  const [confirmPassword, setConfirm]=useState('');
+  const [confirmPassword, setConfirmPassword]=useState('');
   const [isPending, setIsPending]=useState(false);
   const [error, setError] = useState('');
   // const dispatch = dispatch();
@@ -61,7 +61,7 @@ const Register = () => {
   }
 
   function updateConfirm(e) {
-    setConfirm(e.target.value);
+    setConfirmPassword(e.target.value);
   }
 
     return (
