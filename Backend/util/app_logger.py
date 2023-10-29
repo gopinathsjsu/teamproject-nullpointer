@@ -22,7 +22,7 @@ class AppLogger:
         else:
             AppLogger.__instance = self
         # Create logger
-        logger = logging.getLogger("c-cube")
+        logger = logging.getLogger("cmpe202finalproject")
         logger.setLevel(logging.INFO)
         # Handler
         handler = logging.handlers.RotatingFileHandler(
