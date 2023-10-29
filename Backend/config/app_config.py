@@ -11,4 +11,7 @@ mongo_uri = "mongodb+srv://{0}:{1}@cmpe202.2pmv4sg.mongodb.net/".format(
 db_name = "cmpe202_db"
 
 # LOG PATH
-LOG_PATH = "/web/logs/app.log"
+LOG_PATH = "/home/rnr/app.log"
+
+# SECRET KEY
+SECRET_KEY = "ekl7&qnx#kuy-$teg^2t9+%l-^4o9#w*ea=t#vo9#d233ho(1x"
