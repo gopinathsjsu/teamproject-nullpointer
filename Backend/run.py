@@ -5,6 +5,7 @@ from flask_cors import CORS
 
 # import blueprints of endpoints grouped by resource
 from controllers.resource import resource
+from controllers.home import home
 from util.app_initializer import AppInitializer
 from util.db_initializer import DBServiceInitializer
 
@@ -13,6 +14,7 @@ app = AppInitializer.get_instance(__name__).get_flask_app()
 
 # register all blueprints with Flask app
 app.register_blueprint(resource)
+app.register_blueprint(home)
 
 CORS(app, expose_headers=["x-attached-filename", "Content-Disposition"])
 
