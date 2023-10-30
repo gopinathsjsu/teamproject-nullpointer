@@ -1,3 +1,4 @@
+
 """Singleton Database Connection Initializer"""
 from pymongo import MongoClient
 
@@ -30,6 +31,7 @@ class DBServiceInitializer:
 
 
 ''' OLD IMPLEMENTATION
+
 class DBServiceClient:
 
 
@@ -38,4 +40,5 @@ class DBServiceClient:
             mongodb_username, mongodb_password)
         db_client = MongoClient(mongo_uri)
         self.cmpe202_db = db_client[db_name]
+
 '''

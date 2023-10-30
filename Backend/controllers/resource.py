@@ -1,3 +1,4 @@
+
 from flask import Blueprint, jsonify, request
 from flask_api import status
 import config.app_config as app_config
@@ -8,13 +9,17 @@ resource = Blueprint('resource', __name__)
 cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collection_instance(app_config.db_name)
 
 
+
 @resource.route('/api/get_movie_showtimes', methods=['GET'])
 def fetch_movie_showtimes():
+
     rec = cmpe202_db_client.dummy.find_one({})
+
     dummy = {
         "id": str(rec["_id"]),
         "message": rec["message"]
     }
+
     return jsonify(dummy)
 
 @resource.route('/api/login', methods=['POST'])
@@ -42,3 +47,4 @@ def create_account():
     return jsonify({"message": "Successful"})
 
 #@resource.route('/api/get_account', methods=['GET'])
+
