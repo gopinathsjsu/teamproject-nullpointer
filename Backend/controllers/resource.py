@@ -1,15 +1,20 @@
+from bson.objectid import ObjectId
 from flask_api import status
 from flask import Blueprint, jsonify, request
+
 import config.app_config as app_config
 from util.db_initializer import DBServiceInitializer
-from bson.objectid import ObjectId
+from util.app_logger import AppLogger
+from util.helper import check_auth_theater_employee
 
 
 resource = Blueprint('resource', __name__)
 cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collection_instance(app_config.db_name)
+logger = AppLogger.getInstance(__name__).getLogger()
 
 
 @resource.route('/api/get_movie_showtimes', methods=['GET'])
+@check_auth_theater_employee
 def fetch_movie_showtimes():
 
     rec = cmpe202_db_client.dummy.find_one({})
@@ -19,6 +24,7 @@ def fetch_movie_showtimes():
         "message": rec["message"]
     }
     return jsonify(dummy)
+
 
 @resource.route('/api/login', methods=['POST'])
 def login():
@@ -31,6 +37,7 @@ def login():
 
     return jsonify({"message": "Unsuccessful"}), status.HTTP_400_BAD_REQUEST
 
+
 @resource.route('/api/create_account', methods=['POST'])
 def create_account():
     val = request.get_json()
@@ -42,6 +49,7 @@ def create_account():
 
     cmpe202_db_client.account.insert_one(val)
     return jsonify({"message": "Successful"})
+
 
 #Buys a number of tickets for a given showing
 #Body expected: showing_id, ticket_count
@@ -84,6 +92,7 @@ def ticket():
 
     return jsonify(ticket), 201
 
+
 #Returns the tickets registered for given user, if admin
 @resource.route('/api/user_tickets/<user_id>', methods=['GET'])
 def get_user_tickets_admin(user_id):
@@ -94,6 +103,7 @@ def get_user_tickets_admin(user_id):
         x["_id"] = str(x["_id"])
 
     return jsonify(tickets), 200
+
 
 #Returns the tickets registered to current user
 @resource.route('/api/user_tickets', methods=['GET'])
@@ -106,6 +116,7 @@ def get_user_tickets():
         x["_id"] = str(x["_id"])
 
     return jsonify(tickets), 200
+
 
 #Refunds a ticket for current user
 @resource.route('/api/user_ticket/<ticket_id>', methods=['DELETE'])
