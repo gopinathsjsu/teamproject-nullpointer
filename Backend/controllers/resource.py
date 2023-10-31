@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 import config.app_config as app_config
 from util.db_initializer import DBServiceInitializer

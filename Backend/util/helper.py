@@ -38,14 +38,16 @@ def generate_token(username):
 def check_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        token = request.args.get('access_token', None)
-
-        if not token:
-            return abort(make_response(jsonify({"message": "Token is missing"}), 403))
+        try:
+            token = request.headers['x-access-token']
+        except KeyError:
+            logger.error(f"Token is missing")
+            return abort(make_response(jsonify({"message": "Token is missing"}), 403))  
         
         try:
-            data = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
+            decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
         except:
+            logger.error(f"Token is invalid")
             return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
         
         return f(*args, **kwargs)
