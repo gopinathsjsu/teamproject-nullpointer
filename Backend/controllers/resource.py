@@ -120,4 +120,3 @@ def delete_ticket(ticket_id):
         return "", 204
     else:
         return jsonify({"message": "Requested ticket not found or doesn't belong to user"}), 400
->>>>>>> 211d652... added ticket buying
