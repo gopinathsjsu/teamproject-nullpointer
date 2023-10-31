@@ -20,7 +20,6 @@ CORS(app, expose_headers=["x-attached-filename", "Content-Disposition"])
 
 # Initializing the MongoDB connection client
 DBServiceInitializer.get_db_instance(__name__)
-=======
 #!/usr/bin/env python3.11
 # -*- coding: utf-8 -*-
 
