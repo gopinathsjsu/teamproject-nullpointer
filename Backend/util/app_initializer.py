@@ -1,4 +1,5 @@
 """Singleton Flask Application Initializer"""
+
 from flask import Flask
 
 import config.app_config as app_config
@@ -23,7 +24,7 @@ class AppInitializer:
             AppInitializer.__instance = self
             AppInitializer.__app = Flask(name)
             AppInitializer.__app.config.update({
-               'SECRET_KEY': app_config.SECRET_KEY
+                'SECRET_KEY': app_config.SECRET_KEY 
             })
 
     def get_flask_app(self):

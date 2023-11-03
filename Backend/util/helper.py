@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 import datetime
 from flask import abort, jsonify, make_response, request
 from functools import wraps
@@ -13,7 +14,7 @@ cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collectio
 
 
 def verify_user_cred(username, password):
-    rec = cmpe202_db_client.users.find_one({"username": username})
+    rec = cmpe202_db_client.theater_employees.find_one({"username": username})
     try:
         if "password" in rec and password == rec["password"]:
             return True
@@ -35,7 +36,7 @@ def generate_token(username):
     return token
 
 
-def check_auth(f):
+def check_auth_theater_employee(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         try:
@@ -53,3 +54,13 @@ def check_auth(f):
         return f(*args, **kwargs)
     
     return decorated_function
+
+
+def clean_obj(obj):
+    for key in tuple(obj):
+        value = obj[key]
+        if isinstance(value, ObjectId):
+            obj[key] = str(value)
+        if key == "_id":
+            obj["id"] = obj["_id"]
+            del obj["_id"]
