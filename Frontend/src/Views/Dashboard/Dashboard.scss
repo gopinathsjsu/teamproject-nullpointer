@@ -1,0 +1,35 @@
+.dashboard-container{
+  background-color: black;
+  .showing{
+    &-container{
+      width: 80%;
+      margin: 0 auto;
+      .header-text{
+          text-align: center;
+      }
+    }
+    &-grid {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      .movie{
+        width: 30%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        &-image{
+          border-radius: 4px;
+          height: 80%;
+          width: 100%;
+        }
+        &-title{
+          text-align: center;
+        }
+        &-book{
+          width: 30%;
+        }
+      }
+    }
+  }
+  
+}
