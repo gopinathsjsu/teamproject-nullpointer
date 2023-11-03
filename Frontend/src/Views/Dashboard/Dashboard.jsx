@@ -4,7 +4,10 @@ import Oppenheimer from '../../assets/oppenheimer.png';
 import Spiderman from '../../assets/spiderman.png';
 import Elemental from '../../assets/elemental.png';
 
+import { useNavigate } from 'react-router-dom';
+
 const Dashboard = () => {
+  const navigate = useNavigate();
 
   const getLocations = () =>{
     //return location of theatres
@@ -24,6 +27,10 @@ const Dashboard = () => {
       image: Elemental,
     }
   ]
+
+  const handleBook = () => {
+    navigate("/checkout");
+  }
   
   return (
     <div className="dashboard-container">
@@ -38,7 +45,7 @@ const Dashboard = () => {
               <h3 className="movie-title">
                 {movie.title}
               </h3>
-              <Button className="movie-book" type={'button-primary'}>Book</Button>
+              <Button className="movie-book" onClick={handleBook} type={'button-primary'}>Book</Button>
             </div>
           ))}
         </div>

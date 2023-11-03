@@ -1,9 +1,9 @@
 import "./Button.scss";
-// import cx from 'clas'
+import cx from 'classnames';
 
-const Button = ({children, onClick, type}) => {
+const Button = ({children, onClick, type, className}) => {
   return (
-    <button className={type} onClick={onClick}>
+    <button className={cx(type, className)} onClick={onClick}>
       {children}
     </button>
   )
