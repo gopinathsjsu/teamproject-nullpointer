@@ -1,9 +1,13 @@
+import { useNavigate } from 'react-router-dom';
+
 import Button from '../../Components/Button/Button';
 import Oppenheimer from '../../assets/oppenheimer.png';
 
 import "./Checkout.scss";
 
 const Checkout = () => {
+  const navigate = useNavigate();
+
   const data = {
     image: Oppenheimer,
     location: {
@@ -74,7 +78,7 @@ const Checkout = () => {
   }
 
   const handleConfirm = () => {
-
+    navigate('/payment');
   }
 
   return(
