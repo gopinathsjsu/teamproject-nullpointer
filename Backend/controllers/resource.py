@@ -23,6 +23,8 @@ def fetch_movie_showtimes():
         "id": str(rec["_id"]),
         "message": rec["message"]
     }
+    logger.info("Testing dummy {0}".format(dummy))
+
     return jsonify(dummy)
 
 
