@@ -7,6 +7,7 @@ import Login from './Views/Login/Login';
 import Register from './Views/Register/Register';
 import Navbar from './Components/Navbar/Navbar';
 import Checkout from './Views/Checkout/Checkout';
+import Payment from './Views/Payment/Payment';
 
 import './Styles/index.scss'
 
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: '/checkout',
     element: <Checkout />
+  },
+  {
+    path: '/payment',
+    element: <Payment />
   }
 ]);
 
