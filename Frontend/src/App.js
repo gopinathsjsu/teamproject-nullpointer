@@ -4,6 +4,7 @@ import store from './Redux';
 import Dashboard from './Views/Dashboard/Dashboard';
 import Login from './Views/Login/Login';
 import Register from './Views/Register/Register';
+import AccountInfo from './Views/AccountInfo/AccountInfo';
 import Navbar from './Components/Navbar/Navbar';
 import './Styles/index.scss'
 
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />
+  },
+  {
+    path: "/AccountInfo",
+    element: <AccountInfo />
   }
 ]);
 
