@@ -1,0 +1,36 @@
+2023-11-02 16:52:58,295	[ERROR]	Incorrect Password for Username: rnr 
+2023-11-02 16:53:11,293	[ERROR]	Record for Username: rnra not Found 2023-11-07 20:30:51,866	[ERROR]	Token is invalid 
+2023-11-07 20:31:48,554	[ERROR]	Token is invalid 
+2023-11-07 20:32:26,806	[ERROR]	Token is invalid 
+2023-11-07 20:33:03,907	[INFO]	New Movie Inserted : ID (654b0f7e21b14e749cb4c0b5) 
+2023-11-07 20:35:27,057	[INFO]	New Movie Inserted : ID (654b100e843cc2a163b985fc) 
+2023-11-07 20:35:39,552	[INFO]	New Movie Inserted : ID (654b101b843cc2a163b985fd) 
+2023-11-07 20:35:48,459	[INFO]	New Movie Inserted : ID (654b1024843cc2a163b985fe) 
+2023-11-07 20:35:57,788	[INFO]	New Movie Inserted : ID (654b102d843cc2a163b985ff) 
+2023-11-07 20:36:08,222	[INFO]	New Movie Inserted : ID (654b1038843cc2a163b98600) 
+2023-11-07 20:36:19,701	[INFO]	New Movie Inserted : ID (654b1043843cc2a163b98601) 
+2023-11-07 20:36:44,778	[INFO]	New Movie Inserted : ID (654b105c843cc2a163b98602) 
+2023-11-07 20:36:56,962	[INFO]	New Movie Inserted : ID (654b1068843cc2a163b98603) 
+2023-11-07 20:37:05,154	[INFO]	New Movie Inserted : ID (654b1071843cc2a163b98604) 
+2023-11-07 20:37:14,475	[INFO]	New Movie Inserted : ID (654b107a843cc2a163b98605) 
+2023-11-07 20:42:33,137	[INFO]	New Movie Inserted : ID (654b11b8ef9310fb1466885f) 
+2023-11-07 20:42:40,405	[INFO]	Movie Deleted : ID (654b11b8ef9310fb1466885f) 
+2023-11-07 20:55:56,356	[INFO]	New Location Inserted : ID (654b14db62a87a0d10e59c32) 
+2023-11-07 20:56:08,334	[INFO]	New Location Inserted : ID (654b14e862a87a0d10e59c33) 
+2023-11-07 20:56:15,210	[INFO]	New Location Inserted : ID (654b14ef62a87a0d10e59c34) 
+2023-11-07 20:56:23,284	[INFO]	New Location Inserted : ID (654b14f662a87a0d10e59c35) 
+2023-11-07 21:00:20,037	[INFO]	Location Deleted : ID (653b532f8c64c811564626bd) 
+2023-11-07 21:09:04,242	[INFO]	New Multiplex Inserted : ID (654b17f0a8408aa1a0b0989c) 
+2023-11-07 21:10:28,313	[INFO]	Multiplex Deleted : ID (654b17f0a8408aa1a0b0989c) 
+2023-11-07 21:14:35,917	[INFO]	New Multiplex Inserted : ID (654b193b6fa8d2ad43e2ece2) 
+2023-11-07 21:15:20,782	[INFO]	Multiplex Deleted : ID (654b193b6fa8d2ad43e2ece2) 
+2023-11-07 21:30:05,922	[INFO]	New Theater Inserted : ID (654b1cdddc70c376da58c24d) 
+2023-11-07 21:36:09,757	[INFO]	New Theater Inserted : ID (654b1e49e0e46708a8ac838b) 
+2023-11-07 21:38:26,532	[ERROR]	Token is invalid 
+2023-11-07 21:39:04,354	[INFO]	Theater Deleted : ID (654b1cdddc70c376da58c24d) 
+2023-11-07 21:43:56,651	[ERROR]	Token is missing 
+2023-11-07 21:44:27,944	[INFO]	Theater Seating Updated : ID (654b1cdddc70c376da58c24d) 
+2023-11-07 21:53:02,028	[ERROR]	Token is missing 
+2023-11-07 21:54:24,127	[ERROR]	Token is missing 
+2023-11-07 21:55:01,514	[ERROR]	Token is missing 
+2023-11-07 21:55:30,042	[ERROR]	Token is missing 

@@ -47,12 +47,11 @@ def check_auth_theater_employee(f):
         
         try:
             decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
-        except:
+            kwargs["user"] = decoded_token_obj["user"]
+        except Exception as e:
             logger.error(f"Token is invalid")
             return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
-        
         return f(*args, **kwargs)
-    
     return decorated_function
 
 
