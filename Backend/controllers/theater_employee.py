@@ -157,3 +157,74 @@ def delete_multiplex(multiplex_id, *args, **kwargs):
     logger.info("Multiplex Deleted : ID ({0})".format(str(multiplex_id)))
 
     return jsonify({"message": "Multiplex Deletion Successfull"})
+
+
+@theater_employee.route('/api/theater_employee/insert_theater', methods=['POST'])
+@check_auth_theater_employee
+def insert_theater(*args, **kwargs):
+    data = request.get_json()
+
+    theater_data = {
+        "name": data["name"],
+        "multiplex_id": ObjectId(data["multiplex_id"]),
+        "multiplex_name": data["multiplex_name"],
+        "location_id": ObjectId(data["location_id"]),
+        "location": data["location"],
+        "seating_capacity": data["seating_capacity"],
+        "created": datetime.datetime.utcnow(),
+        "user": kwargs["user"]
+    }
+    theater_id = cmpe202_db_client.theaters.insert_one(theater_data).inserted_id
+
+    logger.info("New Theater Inserted : ID ({0})".format(str(theater_id)))
+
+    return jsonify({"theater_id": str(theater_id)})
+
+
+@theater_employee.route('/api/theater_employee/get_theaters', methods=['GET'])
+@check_auth_theater_employee
+def get_theaters(*args, **kwargs):
+    response = []
+
+    theaters_cursor = cmpe202_db_client.theaters.find({
+        "$or": [
+            {"deleted": {"$exists": False}},
+            {"deleted": False}
+        ]
+    })
+        
+    for rec in theaters_cursor:
+        clean_obj(rec)
+        response.append(rec)
+
+    return jsonify(response)
+
+
+@theater_employee.route('/api/theater_employee/delete_theater/<theater_id>', methods=['DELETE'])
+@check_auth_theater_employee
+def delete_theater(theater_id, *args, **kwargs):
+
+    cmpe202_db_client.theaters.update_one(
+        {'_id': ObjectId(theater_id)}, {"$set": {"deleted": True}})
+    
+    logger.info("Theater Deleted : ID ({0})".format(str(theater_id)))
+
+    return jsonify({"message": "Theater Deletion Successfull"})
+
+
+@theater_employee.route('/api/theater_employee/update_theater_seatings/<theater_id>', methods=['PUT'])
+@check_auth_theater_employee
+def update_theater_seatings(theater_id, *args, **kwargs):
+    data = request.get_json()
+
+    cmpe202_db_client.theaters.update_one(
+        {"_id": ObjectId(theater_id)},
+        {"$set": {
+            "seating_capacity": data["seating_capacity"]
+        }}
+    )
+
+    logger.info("Theater Seating Updated : ID ({0})".format(str(theater_id)))
+
+    return jsonify({"message": "Theater Seating Updation Successfull"})
+
