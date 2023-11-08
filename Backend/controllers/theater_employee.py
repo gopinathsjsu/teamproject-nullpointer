@@ -107,3 +107,53 @@ def delete_location(location_id, *args, **kwargs):
     logger.info("Location Deleted : ID ({0})".format(str(location_id)))
 
     return jsonify({"message": "Location Deletion Successfull"})
+
+
+@theater_employee.route('/api/theater_employee/insert_multiplex', methods=['POST'])
+@check_auth_theater_employee
+def insert_multiplex(*args, **kwargs):
+    data = request.get_json()
+
+    multiplex_data = {
+        "name": data["name"],
+        "location_id": ObjectId(data["location_id"]),
+        "location": data["location"],
+        "created": datetime.datetime.utcnow(),
+        "user": kwargs["user"]
+    }
+    multiplex_id = cmpe202_db_client.multiplexes.insert_one(multiplex_data).inserted_id
+
+    logger.info("New Multiplex Inserted : ID ({0})".format(str(multiplex_id)))
+
+    return jsonify({"multiplex_id": str(multiplex_id)})
+
+
+@theater_employee.route('/api/theater_employee/get_multiplexes', methods=['GET'])
+@check_auth_theater_employee
+def get_multiplexes(*args, **kwargs):
+    response = []
+
+    multiplexes_cursor = cmpe202_db_client.multiplexes.find({
+        "$or": [
+            {"deleted": {"$exists": False}},
+            {"deleted": False}
+        ]
+    })
+        
+    for rec in multiplexes_cursor:
+        clean_obj(rec)
+        response.append(rec)
+
+    return jsonify(response)
+
+
+@theater_employee.route('/api/theater_employee/delete_multiplex/<multiplex_id>', methods=['DELETE'])
+@check_auth_theater_employee
+def delete_multiplex(multiplex_id, *args, **kwargs):
+
+    cmpe202_db_client.multiplexes.update_one(
+        {'_id': ObjectId(multiplex_id)}, {"$set": {"deleted": True}})
+    
+    logger.info("Multiplex Deleted : ID ({0})".format(str(multiplex_id)))
+
+    return jsonify({"message": "Multiplex Deletion Successfull"})
