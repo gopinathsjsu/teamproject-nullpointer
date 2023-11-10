@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+
 
 # server specific variables
 INSTANCE_NAME = "cmpe202"
@@ -11,7 +13,8 @@ mongo_uri = "mongodb+srv://{0}:{1}@cmpe202.2pmv4sg.mongodb.net/".format(
 db_name = "cmpe202_db"
 
 # LOG PATH
-LOG_PATH = "C:\Windows\Temp\InstallerLogs" #"/home/rnr/app.log"
+LOG_PATH = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '..', 'logs/app.log'))
 
 # SECRET KEY
 SECRET_KEY = "ekl7&qnx#kuy-$teg^2t9+%l-^4o9#w*ea=t#vo9#d233ho(1x"
