@@ -16,7 +16,7 @@ const Register = () => {
   //Store username and password combination in database
   const createAccount = (e) => {
     e.preventDefault();
-    const user = {username, password};
+    const user = {username, password, membership : "normal", points : 0, admin : false};
     setIsPending(true);
     setError();
 
@@ -40,6 +40,7 @@ const Register = () => {
       if(resp.ok) {
         //note: upon registration, can redirect user to home page && automatically logged in
         console.log('new account added');
+        console.log(user);
         setIsPending(false);
         navigate("/Login");
       }
