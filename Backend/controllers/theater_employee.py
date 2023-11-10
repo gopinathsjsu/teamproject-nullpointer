@@ -228,3 +228,58 @@ def update_theater_seatings(theater_id, *args, **kwargs):
 
     return jsonify({"message": "Theater Seating Updation Successfull"})
 
+
+@theater_employee.route('/api/theater_employee/insert_showtimes', methods=['POST'])
+@check_auth_theater_employee
+def insert_showtimes(*args, **kwargs):
+    data = request.get_json()
+
+    showtime_data = {
+        "theater_id": ObjectId(data["theater_id"]),
+        "theater_name": data["theater_name"],
+        "multiplex_id": ObjectId(data["multiplex_id"]),
+        "multiplex_name": data["multiplex_name"],
+        "location_id": ObjectId(data["location_id"]),
+        "location": data["location"],
+        "showtime": datetime.datetime.strptime(data["showtime"], "%d%b%Y%H%M%S"),
+        "seating_capacity": data["seating_capacity"],
+        "created": datetime.datetime.utcnow(),
+        "discount_criterias": data["discount_criterias"],
+        "user": kwargs["user"],
+        "seats_filled": 0
+    }
+
+    showtime_id = cmpe202_db_client.showtimes.insert_one(showtime_data).inserted_id
+
+    logger.info("New Showtime Inserted : ID ({0})".format(str(showtime_id)))
+
+    return jsonify({"showtime_id": str(showtime_id)})
+
+
+@theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PUT'])
+@check_auth_theater_employee
+def update_showtime(showtime_id, *args, **kwargs):
+    data = request.get_json()
+
+    cmpe202_db_client.showtimes.update_one(
+        {"_id": ObjectId(showtime_id)},
+        {"$set": {
+            "discount_criterias": data["discount_criterias"]
+        }}
+    )
+
+    logger.info("Showtime discount_criterias Updated : ID ({0})".format(str(showtime_id)))
+
+    return jsonify({"message": "Showtime discount_criterias Updation Successfull"})
+
+
+@theater_employee.route('/api/theater_employee/delete_showtime/<showtime_id>', methods=['DELETE'])
+@check_auth_theater_employee
+def delete_showtime(showtime_id, *args, **kwargs):
+
+    cmpe202_db_client.showtimes.update_one(
+        {'_id': ObjectId(showtime_id)}, {"$set": {"deleted": True}})
+    
+    logger.info("Showtime Deleted : ID ({0})".format(str(showtime_id)))
+
+    return jsonify({"message": "Showtime Deletion Successfull"})
