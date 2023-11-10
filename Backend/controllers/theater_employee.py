@@ -1,6 +1,7 @@
 from bson import ObjectId
+import calendar
 import datetime
-from flask import Blueprint, request, jsonify
+from flask import abort, Blueprint, make_response, request, jsonify
 
 import config.app_config as app_config
 from util.app_logger import AppLogger
@@ -234,26 +235,36 @@ def update_theater_seatings(theater_id, *args, **kwargs):
 def insert_showtimes(*args, **kwargs):
     data = request.get_json()
 
-    showtime_data = {
-        "theater_id": ObjectId(data["theater_id"]),
-        "theater_name": data["theater_name"],
-        "multiplex_id": ObjectId(data["multiplex_id"]),
-        "multiplex_name": data["multiplex_name"],
-        "location_id": ObjectId(data["location_id"]),
-        "location": data["location"],
-        "showtime": datetime.datetime.strptime(data["showtime"], "%d%b%Y%H%M%S"),
-        "seating_capacity": data["seating_capacity"],
-        "created": datetime.datetime.utcnow(),
-        "discount_criterias": data["discount_criterias"],
-        "user": kwargs["user"],
-        "seats_filled": 0
-    }
+    showtime_ids = []
+    show_days = dict(data["show_days"])
+    for show_day_rec in show_days:
+        show_day_timestamp = datetime.datetime.strptime(show_day_rec["show_day_timestamp"], "%d%b%Y%H%M%S") 
+        show_day = calendar.day_name[show_day_timestamp.weekday()]
+        for show_time in show_day_rec["show_times"]: 
+            showtime_data = {
+                "theater_id": ObjectId(data["theater_id"]),
+                "theater_name": data["theater_name"],
+                "movie_id": data["movie_id"],
+                "movie_name": data["movie_name"],
+                "multiplex_id": ObjectId(data["multiplex_id"]),
+                "multiplex_name": data["multiplex_name"],
+                "location_id": ObjectId(data["location_id"]),
+                "location": data["location"],
+                "show_date": datetime.datetime.strptime(show_day_timestamp, "%d%b%Y%H%M%S"),
+                "show_day": show_day,
+                "show_time": datetime.datetime.strptime(show_time, "%H:%M:%S"),
+                "seating_capacity": data["seating_capacity"],
+                "created": datetime.datetime.utcnow(),
+                "discount_criteria": data["discount_criteria"],
+                "user": kwargs["user"],
+                "seats_filled": 0
+            }
 
-    showtime_id = cmpe202_db_client.showtimes.insert_one(showtime_data).inserted_id
+            showtime_id = cmpe202_db_client.showtimes.insert_one(showtime_data).inserted_id
+            showtime_ids.append(str(showtime_id))
+            logger.info("New Showtime Inserted : ID ({0})".format(str(showtime_id)))
 
-    logger.info("New Showtime Inserted : ID ({0})".format(str(showtime_id)))
-
-    return jsonify({"showtime_id": str(showtime_id)})
+    return jsonify({"showtime_ids": showtime_ids})
 
 
 @theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PUT'])
@@ -264,13 +275,13 @@ def update_showtime(showtime_id, *args, **kwargs):
     cmpe202_db_client.showtimes.update_one(
         {"_id": ObjectId(showtime_id)},
         {"$set": {
-            "discount_criterias": data["discount_criterias"]
+            "discount_criteria": data["discount_criteria"]
         }}
     )
 
-    logger.info("Showtime discount_criterias Updated : ID ({0})".format(str(showtime_id)))
+    logger.info("Showtime discount_criteria Updated : ID ({0})".format(str(showtime_id)))
 
-    return jsonify({"message": "Showtime discount_criterias Updation Successfull"})
+    return jsonify({"message": "Showtime discount_criteria Updation Successfull"})
 
 
 @theater_employee.route('/api/theater_employee/delete_showtime/<showtime_id>', methods=['DELETE'])
@@ -283,3 +294,28 @@ def delete_showtime(showtime_id, *args, **kwargs):
     logger.info("Showtime Deleted : ID ({0})".format(str(showtime_id)))
 
     return jsonify({"message": "Showtime Deletion Successfull"})
+
+
+# @theater_employee.route('/api/theater_employee/get_theater_summary', methods=['GET'])
+# @check_auth_theater_employee
+# def get_theater_summary(*args, **kwargs):
+#     start_date = request.args.get("start_date", None)
+
+#     if theater_id is None:
+#         return abort(make_response(jsonify(error="Theater ID not provided"), 400))
+    
+#     if start_date is None:
+#         return abort(make_response(jsonify(error="Start Date not provided"), 400))
+    
+#     theater_summary_cursor = cmpe202_db_client.showtimes.find({
+#         "theater_id": ObjectId(theater_id),
+#         "created": {"$gte": start_date}
+#     })
+
+#     response = []
+
+#     for rec in theaters_cursor:
+#         clean_obj(rec)
+#         response.append(rec)
+
+#     return jsonify(response)
