@@ -1,4 +1,5 @@
 import "./Login.scss";
+import Button from '../../Components/Button/Button';
 import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,21 +20,36 @@ const Login = () => {
 
     fetch("http://localhost:8005/api/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(user)
     })
-    .then((resp) => {
-      if(resp.ok) {
-        localStorage.setItem('user', JSON.stringify(user));
-        console.log(localStorage.getItem('user'));
-        console.log('logged in successfully');
-        navigate("/");
-      }
-      else {
-        console.log(resp)
-        setError("Error: Username or password is incorrect");
-      }
-    })
+      .then((resp) => resp.json())
+      .then((data) => {
+        //console.log("DATA: " + data);
+        if (data.message === "Successful") {
+          const userObject = data.user;
+          //console.log(userObject); 
+
+          localStorage.setItem("user", JSON.stringify(userObject));
+          if(userObject.isAdmin) {
+            console.log('admin logged in successfully');
+            navigate("/admin");
+          }
+          else {
+            console.log("normal user logged in successfully");
+            navigate("/");
+          }
+        } else {
+          // Handle unsuccessful login
+          console.log("Login unsuccessful");
+          setError("Error: Username or password is incorrect");
+        }
+      })
+      .catch((error) => {
+        console.error("Error during login:", error);
+        setError("An unexpected error occurred");
+      });
+
     //return login info
     // implement backend to login (verify if account exists && if not, give error)
     //console.log("username: " + username + " password: " + password);
@@ -81,7 +97,7 @@ const Login = () => {
             </div>
             
             <p style={{ marginBottom: "20px"}}></p>
-            <button onClick={getLogin}> Sign In </button>
+            <Button type="button-primary" onClick={getLogin}> Sign In </Button>
             <p className="error-message">{error}</p>
 
             <p style={{marginTop: "84px"}}></p>

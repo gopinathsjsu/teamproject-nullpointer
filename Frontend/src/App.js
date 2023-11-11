@@ -9,6 +9,7 @@ import AccountInfo from './Views/AccountInfo/AccountInfo';
 import Navbar from './Components/Navbar/Navbar';
 import Checkout from './Views/Checkout/Checkout';
 import Payment from './Views/Payment/Payment';
+import Admin from './Views/Admin/Admin';
 
 import './Styles/index.scss'
 
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: '/payment',
     element: <Payment />
+  },
+  {
+    path: '/admin',
+    element: <Admin />
   }
 ]);
 

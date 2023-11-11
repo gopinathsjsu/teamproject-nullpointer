@@ -27,18 +27,28 @@ def fetch_movie_showtimes():
 
     return jsonify(dummy)
 
-
 @resource.route('/api/login', methods=['POST'])
 def login():
-    val = request.get_json()
-    # check if username exists in database
-    userExists = cmpe202_db_client.account.find_one({"username": val["username"]})
+    try:
+        val = request.get_json()
+        # check if username exists in the database
+        user = cmpe202_db_client.account.find_one({"username": val["username"]})
 
-    if userExists and userExists["password"] == val["password"]:
-        return jsonify({"message": "Successful"}), status.HTTP_200_OK
+        if user and user["password"] == val["password"]:
+            # Convert ObjectId to string before returning the user object
+            user["_id"] = str(user["_id"])
+            response_data = {
+                "message": "Successful",
+                "user": user
+            }
+            return jsonify(response_data), 200
 
-    return jsonify({"message": "Unsuccessful"}), status.HTTP_400_BAD_REQUEST
+        return jsonify({"message": "Unsuccessful"}), 400
 
+    except Exception as e:
+        # Log the exception for debugging
+        print(f"An error occurred: {str(e)}")
+        return jsonify({"message": "Internal Server Error"}), 500
 
 @resource.route('/api/create_account', methods=['POST'])
 def create_account():
