@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, request
 import config.app_config as app_config
 from util.db_initializer import DBServiceInitializer
 from util.app_logger import AppLogger
-from util.helper import check_auth_theater_employee
+from util.helper import check_auth
 
 
 resource = Blueprint('resource', __name__)
@@ -14,7 +14,7 @@ logger = AppLogger.getInstance(__name__).getLogger()
 
 
 @resource.route('/api/get_movie_showtimes', methods=['GET'])
-@check_auth_theater_employee
+@check_auth(roles=[])
 def fetch_movie_showtimes():
 
     rec = cmpe202_db_client.dummy.find_one({})

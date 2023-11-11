@@ -6,7 +6,7 @@ from flask import abort, Blueprint, make_response, request, jsonify
 import config.app_config as app_config
 from util.app_logger import AppLogger
 from util.db_initializer import DBServiceInitializer
-from util.helper import check_auth_theater_employee, clean_obj
+from util.helper import check_auth, clean_obj
 
 
 theater_employee = Blueprint('theater_employee', __name__)
@@ -15,7 +15,7 @@ cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collectio
 
 
 @theater_employee.route('/api/theater_employee/insert_movie', methods=['POST'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def insert_movie(*args, **kwargs):
     data = request.get_json()
 
@@ -32,7 +32,7 @@ def insert_movie(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/get_movies', methods=['GET'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def get_movies(*args, **kwargs):
     response = []
 
@@ -51,7 +51,7 @@ def get_movies(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/delete_movie/<movie_id>', methods=['DELETE'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def delete_movie(movie_id, *args, **kwargs):
 
     cmpe202_db_client.movies.update_one(
@@ -63,7 +63,7 @@ def delete_movie(movie_id, *args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/insert_location', methods=['POST'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def insert_location(*args, **kwargs):
     data = request.get_json()
 
@@ -80,7 +80,7 @@ def insert_location(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/get_locations', methods=['GET'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def get_locations(*args, **kwargs):
     response = []
 
@@ -99,7 +99,7 @@ def get_locations(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/delete_location/<location_id>', methods=['DELETE'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def delete_location(location_id, *args, **kwargs):
 
     cmpe202_db_client.locations.update_one(
@@ -111,7 +111,7 @@ def delete_location(location_id, *args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/insert_multiplex', methods=['POST'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def insert_multiplex(*args, **kwargs):
     data = request.get_json()
 
@@ -130,7 +130,7 @@ def insert_multiplex(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/get_multiplexes', methods=['GET'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def get_multiplexes(*args, **kwargs):
     response = []
 
@@ -149,7 +149,7 @@ def get_multiplexes(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/delete_multiplex/<multiplex_id>', methods=['DELETE'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def delete_multiplex(multiplex_id, *args, **kwargs):
 
     cmpe202_db_client.multiplexes.update_one(
@@ -161,7 +161,7 @@ def delete_multiplex(multiplex_id, *args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/insert_theater', methods=['POST'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def insert_theater(*args, **kwargs):
     data = request.get_json()
 
@@ -183,7 +183,7 @@ def insert_theater(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/get_theaters', methods=['GET'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def get_theaters(*args, **kwargs):
     response = []
 
@@ -202,7 +202,7 @@ def get_theaters(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/delete_theater/<theater_id>', methods=['DELETE'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def delete_theater(theater_id, *args, **kwargs):
 
     cmpe202_db_client.theaters.update_one(
@@ -214,7 +214,7 @@ def delete_theater(theater_id, *args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/update_theater_seatings/<theater_id>', methods=['PUT'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def update_theater_seatings(theater_id, *args, **kwargs):
     data = request.get_json()
 
@@ -231,7 +231,7 @@ def update_theater_seatings(theater_id, *args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/insert_showtimes', methods=['POST'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def insert_showtimes(*args, **kwargs):
     data = request.get_json()
 
@@ -268,7 +268,7 @@ def insert_showtimes(*args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PUT'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def update_showtime(showtime_id, *args, **kwargs):
     data = request.get_json()
 
@@ -285,7 +285,7 @@ def update_showtime(showtime_id, *args, **kwargs):
 
 
 @theater_employee.route('/api/theater_employee/delete_showtime/<showtime_id>', methods=['DELETE'])
-@check_auth_theater_employee
+@check_auth(roles=["Admin"])
 def delete_showtime(showtime_id, *args, **kwargs):
 
     cmpe202_db_client.showtimes.update_one(
@@ -297,7 +297,7 @@ def delete_showtime(showtime_id, *args, **kwargs):
 
 
 # @theater_employee.route('/api/theater_employee/get_theater_summary', methods=['GET'])
-# @check_auth_theater_employee
+# @check_auth(roles=["Admin"])
 # def get_theater_summary(*args, **kwargs):
 #     start_date = request.args.get("start_date", None)
 
