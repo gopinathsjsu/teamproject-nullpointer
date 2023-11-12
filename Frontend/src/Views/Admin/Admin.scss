@@ -1,0 +1,60 @@
+
+.admin-page {
+    padding-top: 2%;
+    text-align: center;
+}
+
+.title {
+    text-decoration: underline;
+}
+
+.button-style {
+    min-width: 5%;
+    margin-right: 1%;
+    margin-bottom: 2%;
+}
+.analytics-row {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+}
+
+.info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.list-box {
+    background-color: rgb(28, 28, 28);
+    height: 300px;
+    width: 100%;
+    min-width: 500px;
+    border-radius: 10%;
+    padding: 5%;
+    text-align: center;
+    overflow: auto;
+}
+
+.drop-down {
+    height: 25px;
+    font-size: 20px;
+    margin-left: 10px;
+}
+
+.list-box::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list-box::-webkit-scrollbar-thumb {
+    background-color: #ff0000; 
+    border-radius: 10px;
+}
+
+.list-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.list-box::-webkit-scrollbar-thumb:hover {
+    background-color: #c90000;
+}
