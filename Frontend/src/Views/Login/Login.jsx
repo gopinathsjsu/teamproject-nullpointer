@@ -15,19 +15,23 @@ const Login = () => {
 
   //on button press, call getLogin
   const getLogin = () => {
-    const user = {username, password};
     setError();
 
     fetch("http://localhost:8005/api/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user)
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        username: username,
+        password: password
+      })
     })
       .then((resp) => resp.json())
       .then((data) => {
-        //console.log("DATA: " + data);
-        if (data.message === "Successful") {
-          const userObject = data.user;
+        if(data.error) {
+          setError(`Error: ${data.error}`);
+        }
+        else if (data.access_token) {
+          const userObject = data.user_data;
           //console.log(userObject); 
 
           localStorage.setItem("user", JSON.stringify(userObject));
@@ -39,20 +43,12 @@ const Login = () => {
             console.log("normal user logged in successfully");
             navigate("/");
           }
-        } else {
-          // Handle unsuccessful login
-          console.log("Login unsuccessful");
-          setError("Error: Username or password is incorrect");
         }
       })
       .catch((error) => {
         console.error("Error during login:", error);
         setError("An unexpected error occurred");
       });
-
-    //return login info
-    // implement backend to login (verify if account exists && if not, give error)
-    //console.log("username: " + username + " password: " + password);
   }
   
   function updateUsername(e) {

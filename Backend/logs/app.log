@@ -34,3 +34,34 @@
 2023-11-07 21:54:24,127	[ERROR]	Token is missing 
 2023-11-07 21:55:01,514	[ERROR]	Token is missing 
 2023-11-07 21:55:30,042	[ERROR]	Token is missing 
+2023-11-11 23:32:52,757	[ERROR]	Record for Username: admin not Found 
+2023-11-11 23:33:29,618	[ERROR]	Record for Username: admin not Found 
+2023-11-11 23:39:04,976	[ERROR]	Incorrect Password for Username: admin 
+2023-11-11 23:41:24,119	[ERROR]	Incorrect Password for Username: admin 
+2023-11-11 23:41:28,564	[ERROR]	Record for Username:  not Found 
+2023-11-11 23:47:10,004	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:22,060	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:23,354	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:23,955	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:25,632	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:35,917	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:38,394	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:39,936	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:42,645	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:47:46,130	[ERROR]	Record for Username: 1 not Found 
+2023-11-11 23:48:07,945	[ERROR]	Record for Username:  not Found 
+2023-11-11 23:48:48,233	[ERROR]	Record for Username:  not Found 
+2023-11-11 23:48:49,849	[ERROR]	Record for Username:  not Found 
+2023-11-11 23:49:28,995	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:51:14,303	[ERROR]	Record for Username:  not Found 
+2023-11-11 23:54:49,675	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:55:36,925	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:55:54,193	[ERROR]	Record for Username:  not Found 
+2023-11-11 23:55:56,677	[ERROR]	Record for Username:  not Found 
+2023-11-11 23:58:28,092	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:58:29,460	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:58:30,792	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:59:05,661	[ERROR]	Record for Username: null not Found 
+2023-11-11 23:59:09,265	[ERROR]	Record for Username: null not Found 
+2023-11-12 00:01:31,311	[ERROR]	Record for Username: test not Found 
+2023-11-12 00:01:36,688	[ERROR]	Record for Username:  not Found 

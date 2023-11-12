@@ -56,11 +56,11 @@ def create_account():
     val = request.get_json()
 
     # check if username does not exist in database
-    userExists = cmpe202_db_client.account.find_one({"username": val["username"]})
+    userExists = cmpe202_db_client.users.find_one({"username": val["username"]})
     if userExists:
         return jsonify({"message": "Unsuccesful"}), status.HTTP_400_BAD_REQUEST
 
-    cmpe202_db_client.account.insert_one(val)
+    cmpe202_db_client.users.insert_one(val)
     return jsonify({"message": "Successful"})
 
 
