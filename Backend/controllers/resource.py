@@ -27,7 +27,8 @@ def fetch_movie_showtimes():
 
     return jsonify(dummy)
 
-@resource.route('/api/login', methods=['POST'])
+
+@resource.route('/api/login_old', methods=['POST'])
 def login():
     try:
         val = request.get_json()

@@ -31,7 +31,7 @@ DBServiceInitializer.get_db_instance(__name__)
 AppLogger.getInstance(__name__).getLogger()
 
 
-@app.route('/api/theater_employee_login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def get_access_key():
     username = request.form.get("username", None) 
     password = request.form.get("password", None)
