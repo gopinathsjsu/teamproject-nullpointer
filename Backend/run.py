@@ -43,6 +43,7 @@ def get_access_key():
     if verify_user_cred(username, password, user_record):
         access_token = generate_token(user_record)
         clean_obj(user_record)
+        del user_record["password"]
         return jsonify({"access_token": access_token, "user_data": user_record})
     
     return abort(make_response(jsonify(error=f"Incorrect Username or Password."), 400))
