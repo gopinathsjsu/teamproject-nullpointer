@@ -12,7 +12,7 @@ from controllers.theater_employee import theater_employee
 from util.app_initializer import AppInitializer
 from util.app_logger import AppLogger
 from util.db_initializer import DBServiceInitializer
-from util.helper import generate_token, fetch_user_details, verify_user_cred
+from util.helper import clean_obj, generate_token, fetch_user_details, verify_user_cred
 
 
 app = AppInitializer.get_instance(__name__).get_flask_app()
@@ -42,7 +42,8 @@ def get_access_key():
     user_record = fetch_user_details(username)
     if verify_user_cred(username, password, user_record):
         access_token = generate_token(user_record)
-        return jsonify({"access_token": access_token})
+        clean_obj(user_record)
+        return jsonify({"access_token": access_token, "user_data": user_record})
     
     return abort(make_response(jsonify(error=f"Incorrect Username or Password."), 400))
 
