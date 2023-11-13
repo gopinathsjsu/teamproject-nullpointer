@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request
 import config.app_config as app_config
 from util.db_initializer import DBServiceInitializer
 from util.app_logger import AppLogger
-from util.helper import check_auth, set_token_vars, clean_list, check_auth_any
+from util.helper import check_auth, set_token_vars, clean_list, check_auth_any, clean_obj
 
 
 resource = Blueprint('resource', __name__)
@@ -72,6 +72,23 @@ def get_showtimes():
     return jsonify(showtimes), 200
 
 
+@resource.route('/api/testadd', methods=['GET'])
+def get_ddshowtimes():
+    theater = {
+        "name": "Testing Theater2",
+        "seating_capacity": 10
+    }
+    cmpe202_db_client.theaters.insert_one(theater)
+
+    showtime = {
+        "movie_id": ObjectId("654b100e843cc2a163b985fc"),
+        "theater_id": theater["_id"]
+    }
+    cmpe202_db_client.showtimes.insert_one(showtime)
+
+    return "", 200
+
+
 #Buys a number of tickets for a given showtime
 #Body expected: showtime_id, ticket_count
 @resource.route('/api/buy_ticket', methods=['POST'])
@@ -104,7 +121,7 @@ def buy_tickets(*args, **kwargs):
         return "Bad showtime ID", 400
 
     theater_seats = cmpe202_db_client.theaters.find_one({"_id": ObjectId(theater_id)})["seating_capacity"]
-    existing_tickets = list(cmpe202_db_client.ticket.find({"showtime_id": showtime_id}))
+    existing_tickets = list(cmpe202_db_client.ticket.find({"showtime_id": ObjectId(showtime_id)}))
     if existing_tickets:
         existing = 0
         for x in existing_tickets:
@@ -118,17 +135,14 @@ def buy_tickets(*args, **kwargs):
         return jsonify({"message": "Too poor"}), 403
 
     ticket = {
-        "user_id": user_id,
-        "showtime_id": showtime_id,
+        "user_id": ObjectId(user_id),
+        "showtime_id": ObjectId(showtime_id),
         "ticket_count": str(ticket_count)
     }
 
     cmpe202_db_client.ticket.insert_one(ticket)
 
-    #insert_one changes the given dict and adds _id (which breaks jsonify)
-    ticket["_id"] = str(ticket["_id"])
-
-
+    clean_obj(ticket)
     return jsonify(ticket), 201
 
 
@@ -136,7 +150,7 @@ def buy_tickets(*args, **kwargs):
 @resource.route('/api/user_tickets/<check_user_id>', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_user_tickets_admin(check_user_id, *args, **kwargs):
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": str(check_user_id)}))
+    tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(check_user_id)}))
     for x in tickets:
         x["_id"] = str(x["_id"])
 
@@ -147,7 +161,7 @@ def get_user_tickets_admin(check_user_id, *args, **kwargs):
 @resource.route('/api/user_tickets', methods=['GET'])
 @check_auth_any()
 def get_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": kwargs["user_id"]}))
+    tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
     clean_list(tickets)
 
     return jsonify(tickets), 200
@@ -159,7 +173,7 @@ def get_user_tickets(*args, **kwargs):
 def delete_ticket(ticket_id, *args, **kwargs):
     #TODO: verify showtime time hasn't passed
 
-    if (cmpe202_db_client.ticket.delete_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)}).deleted_count):
+    if (cmpe202_db_client.ticket.delete_one({"user_id": ObjectId(kwargs["user_id"]), "_id": ObjectId(ticket_id)}).deleted_count):
         #TODO: give refund to user
         return "", 204
     else:
