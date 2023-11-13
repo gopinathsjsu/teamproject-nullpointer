@@ -12,7 +12,7 @@ from controllers.theater_employee import theater_employee
 from util.app_initializer import AppInitializer
 from util.app_logger import AppLogger
 from util.db_initializer import DBServiceInitializer
-from util.helper import clean_obj, generate_token, fetch_user_details, verify_user_cred
+from util.helper import clean_obj, decode_token, generate_token, fetch_user_details, verify_user_cred
 
 
 app = AppInitializer.get_instance(__name__).get_flask_app()
@@ -28,7 +28,7 @@ CORS(app, expose_headers=["x-attached-filename", "Content-Disposition"])
 DBServiceInitializer.get_db_instance(__name__)
 
 # Initializing Logger
-AppLogger.getInstance(__name__).getLogger()
+logger = AppLogger.getInstance(__name__).getLogger()
 
 
 @app.route('/api/login', methods=['POST'])
@@ -47,6 +47,21 @@ def get_access_key():
         return jsonify({"access_token": access_token, "user_data": user_record})
     
     return abort(make_response(jsonify(error=f"Incorrect Username or Password."), 400))
+
+
+@app.route('/api/decode_access_token', methods=['GET'])
+def decode_access_token():
+    access_token = request.headers['x-access-token']
+
+    if access_token is None:
+        return abort(make_response(jsonify(error=f"Please provide x-access-token in headers"), 400))
+    
+    try:
+        decoded_token_obj = decode_token(access_token)
+        return jsonify({"decoded_token_data": decoded_token_obj})
+    except Exception as e:
+        logger.error(f"Token is invalid cannot be decoded")
+    return jsonify({"message": "Token is invalid cannot be decoded"})
 
 
 if __name__ == '__main__':

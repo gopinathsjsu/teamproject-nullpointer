@@ -43,6 +43,11 @@ def generate_token(user_record):
     return token
 
 
+def decode_token(token):
+    decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
+    return decoded_token_obj
+
+
 def check_auth(roles=[]):
     def auth_wrapper_func(f):
         @wraps(f)
@@ -58,7 +63,7 @@ def check_auth(roles=[]):
                     return abort(make_response(jsonify({"message": "Token is missing"}), 403))  
                 
                 try:
-                    decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
+                    decoded_token_obj = decode_token(token)
                     kwargs["user_id"] = decoded_token_obj["user_id"]
                     kwargs["user"] = decoded_token_obj["username"]
 
