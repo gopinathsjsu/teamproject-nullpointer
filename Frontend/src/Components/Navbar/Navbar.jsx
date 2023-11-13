@@ -23,14 +23,14 @@ const Navbar = () => {
           name={"Theatres"} 
           options={theatres} 
         />
+        <a href="/payment" className="link">
+          Buy Membership
+        </a>
       </div>
       <div className='right-content'>
         <a href="/register" className="link">
           Login/Register
         </a>
-        {/* <Button onClick={handleLoginOrRegister} type={"button-primary"}>
-          Login/Register
-        </Button> */}
       </div>
     </div>
   )

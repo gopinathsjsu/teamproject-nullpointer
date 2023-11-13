@@ -1,12 +1,17 @@
-import "./Login.scss";
-import Button from '../../Components/Button/Button';
 import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import Button from '../../Components/Button/Button';
+import { login } from "../../Redux/userReducer";
+import "./Login.scss";
+import { host } from "../../env";
 
 
 const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const dispatch = useDispatch();
 
   //username storage
   const [username, setUsername]=useState(null);
@@ -17,7 +22,7 @@ const Login = () => {
   const getLogin = () => {
     setError();
 
-    fetch("http://localhost:8005/api/login", {
+    fetch(`${host}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -31,16 +36,14 @@ const Login = () => {
           setError(`Error: ${data.error}`);
         }
         else if (data.access_token) {
-          const userObject = data.user_data;
-          //console.log(userObject); 
+          const { access_token, user_data } = data;
+          localStorage.setItem("x-access-token", access_token);
+          dispatch(login(user_data));
 
-          localStorage.setItem("user", JSON.stringify(userObject));
-          if(userObject.isAdmin) {
-            console.log('admin logged in successfully');
+          if(user_data.isAdmin) {
             navigate("/admin");
           }
           else {
-            console.log("normal user logged in successfully");
             navigate("/");
           }
         }

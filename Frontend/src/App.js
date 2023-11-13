@@ -1,7 +1,8 @@
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { Provider } from 'react-redux';
+import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
-import store from './Redux';
+import { login } from "./Redux/userReducer";
 import Dashboard from './Views/Dashboard/Dashboard';
 import Login from './Views/Login/Login';
 import Register from './Views/Register/Register';
@@ -10,10 +11,11 @@ import Navbar from './Components/Navbar/Navbar';
 import Checkout from './Views/Checkout/Checkout';
 import Payment from './Views/Payment/Payment';
 import Admin from './Views/Admin/Admin';
+import { host } from './env';
 
 import './Styles/index.scss'
 
-const router = createBrowserRouter([
+const router = (user) => createBrowserRouter([
   {
     path: "/",
     element: <Dashboard />,
@@ -27,8 +29,8 @@ const router = createBrowserRouter([
     element: <Register />
   },
   {
-    path: "/AccountInfo",
-    element: <AccountInfo />
+    path: "/account",
+    element: user?.isMember?  <AccountInfo />: <Navigate to="/"/>,
   },
   {
     path: '/checkout',
@@ -40,16 +42,37 @@ const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <Admin />
+    element: user?.isAdmin? <Admin /> : <Navigate to="/" />,
   }
 ]);
 
-function App() {
+const App = () => {
+  const { user } = useSelector((state) => state);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // fetch(`${host}/api/user_details`, {
+    //   method: "GET",
+    //   headers: { 
+    //     "Content-Type": "application/x-www-form-urlencoded",
+    //     'x-access-token': localStorage.getItem('x-access-token') 
+    //   },
+    // }).then((resp) => resp.json())
+    // .then((data) => {
+    //   dispatch((login(data)));
+    // })
+    dispatch(login({id:"655080ff20b140bcca6489d3",
+    isAdmin:false,
+    isMember:false,
+    points:0,
+    username:"admin"}))
+  }, []);
+
   return (
-    <Provider store={store}>
+    <>
       <Navbar/>
-      <RouterProvider router={router} />
-    </Provider>
+      <RouterProvider router={router(user)} />
+    </>
   );
 }
 

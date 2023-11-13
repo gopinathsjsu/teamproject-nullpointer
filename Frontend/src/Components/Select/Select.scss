@@ -1,6 +1,10 @@
 .select-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-self: space-between;
+  label{
+    padding: 4% 2%;
+  }
   select{
     padding: 4%;
     border-radius: 4px;
