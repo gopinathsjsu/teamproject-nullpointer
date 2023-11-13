@@ -89,3 +89,56 @@ def clean_obj(obj):
         if key == "_id":
             obj["id"] = obj["_id"]
             del obj["_id"]
+
+
+#Cleans the whole list
+def clean_list(ret):
+    for obj in ret:
+        for k in obj:
+            if isinstance(obj[k], ObjectId):
+                obj[k] = str(obj[k])
+
+
+#To set the token variables without requiring it
+def set_token_vars():
+    def auth_wrapper_func(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            try:
+                token = request.headers['x-access-token']
+            except KeyError:
+                return f(*args, **kwargs)
+            
+            try:
+                decoded_token_obj = decode_token(token)
+                kwargs["user_id"] = decoded_token_obj["user_id"]
+                kwargs["user"] = decoded_token_obj["username"]
+                kwargs["is_member"] = decoded_token_obj["isMember"]
+            except Exception as e:
+                logger.error(f"Token is invalid")
+                return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
+            return f(*args, **kwargs)
+        return decorated_function
+    return auth_wrapper_func
+
+#Checks to make sure a user is signed in
+def check_auth_any():
+    def auth_wrapper_func(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            try:
+                token = request.headers['x-access-token']
+            except KeyError:
+                logger.error(f"Token is missing")
+                return abort(make_response(jsonify({"message": "Token is missing"}), 401))  
+            
+            try:
+                decoded_token_obj = decode_token(token)
+                kwargs["user_id"] = decoded_token_obj["user_id"]
+                kwargs["user"] = decoded_token_obj["username"]
+            except Exception as e:
+                logger.error(f"Token is invalid")
+                return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
+            return f(*args, **kwargs)
+        return decorated_function
+    return auth_wrapper_func

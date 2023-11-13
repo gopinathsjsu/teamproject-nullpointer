@@ -1,11 +1,10 @@
 from bson.objectid import ObjectId
-from flask_api import status
 from flask import Blueprint, jsonify, request
 
 import config.app_config as app_config
 from util.db_initializer import DBServiceInitializer
 from util.app_logger import AppLogger
-from util.helper import check_auth
+from util.helper import check_auth, set_token_vars, clean_list, check_auth_any
 
 
 resource = Blueprint('resource', __name__)
@@ -58,42 +57,54 @@ def create_account():
     # check if username does not exist in database
     userExists = cmpe202_db_client.users.find_one({"username": val["username"]})
     if userExists:
-        return jsonify({"message": "Unsuccesful"}), status.HTTP_400_BAD_REQUEST
+        return jsonify({"message": "Unsuccesful"}), 400
 
     cmpe202_db_client.users.insert_one(val)
-    return jsonify({"message": "Successful"})
+    return jsonify({"message": "Successful"}), 201
 
 
-#Buys a number of tickets for a given showing
-#Body expected: showing_id, ticket_count
+#Returns all showtimes
+@resource.route('/api/showtimes', methods=['GET'])
+def get_showtimes():
+    showtimes = list(cmpe202_db_client.showtimes.find({}))
+    clean_list(showtimes)
+
+    return jsonify(showtimes), 200
+
+
+#Buys a number of tickets for a given showtime
+#Body expected: showtime_id, ticket_count
 @resource.route('/api/buy_ticket', methods=['POST'])
-def ticket():
+@set_token_vars()
+def buy_tickets(*args, **kwargs):
     val = request.get_json()
 
-    #TODO: verify user is logged in
-    user_id = 1
-    if ("user_id" in val):
-        user_id = val["user_id"]
+    if "user" in kwargs:
+        user_id = kwargs["user_id"]
+        if ("ticket_count" in val):
+            ticket_count = val["ticket_count"]
+        else:
+            ticket_count = 1
+        
+        if ("showtime_id" in val):
+            showtime_id = val["showtime_id"]
+        else:
+            return "Missing showtime_id", 400
+    else:
+        user_id = "0"
+        ticket_count = 1
 
-    #TODO: verify showing is legit and has enough open seats
-    showing_id = 5
-    if ("showing_id" in val):
-        showing_id = val["showing_id"]
-
-    ticket_count = 1
-    if ("ticket_count" in val):
-        ticket_count = val["ticket_count"]
+    #TODO: verify showtime is legit and has enough open seats
     
-
-    #TODO: charge user for movie (premium check logic in there) (include payment option)
+    #TODO: charge user for movie (premium check logic in there)
     paid = True
     if (not paid):
         return jsonify({"message": "Too poor"}), 403
 
     #Could add seat selection, but let's see how things go
     ticket = {
-        "user_id": str(user_id),
-        "showing_id": str(showing_id),
+        "user_id": user_id,
+        "showtime_id": showtime_id,
         "ticket_count": str(ticket_count)
     }
 
@@ -107,11 +118,10 @@ def ticket():
 
 
 #Returns the tickets registered for given user, if admin
-@resource.route('/api/user_tickets/<user_id>', methods=['GET'])
-def get_user_tickets_admin(user_id):
-    #TODO: verify caller is admin
-
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": str(user_id)}))
+@resource.route('/api/user_tickets/<check_user_id>', methods=['GET'])
+@check_auth(roles=["Admin"])
+def get_user_tickets_admin(check_user_id, *args, **kwargs):
+    tickets = list(cmpe202_db_client.ticket.find({"user_id": str(check_user_id)}))
     for x in tickets:
         x["_id"] = str(x["_id"])
 
@@ -120,13 +130,10 @@ def get_user_tickets_admin(user_id):
 
 #Returns the tickets registered to current user
 @resource.route('/api/user_tickets', methods=['GET'])
-def get_user_tickets():
-    #TODO: verify user is logged in and get ID
-    user_id = 1
-
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": str(user_id)}))
-    for x in tickets:
-        x["_id"] = str(x["_id"])
+@check_auth_any()
+def get_user_tickets(*args, **kwargs):
+    tickets = list(cmpe202_db_client.ticket.find({"user_id": kwargs["user_id"]}))
+    clean_list(tickets)
 
     return jsonify(tickets), 200
 
@@ -137,7 +144,7 @@ def delete_ticket(ticket_id):
     #TODO: verify user is logged in and get ID
     user_id = 1
 
-    #TODO: verify showing time hasn't passed
+    #TODO: verify showtime time hasn't passed
 
     if (cmpe202_db_client.ticket.delete_one({"user_id": str(user_id), "_id": ObjectId(ticket_id)}).deleted_count):
         #TODO: give refund to user
