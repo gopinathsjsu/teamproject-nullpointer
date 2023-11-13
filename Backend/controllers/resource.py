@@ -85,23 +85,38 @@ def buy_tickets(*args, **kwargs):
             ticket_count = val["ticket_count"]
         else:
             ticket_count = 1
-        
-        if ("showtime_id" in val):
-            showtime_id = val["showtime_id"]
-        else:
-            return "Missing showtime_id", 400
     else:
         user_id = "0"
         ticket_count = 1
 
-    #TODO: verify showtime is legit and has enough open seats
+    if ("showtime_id" in val):
+            showtime_id = val["showtime_id"]
+    else:
+        return "Missing showtime_id", 400
+    
+    if (ticket_count > 8):
+        return "Only 8 tickets max", 400
+
+    #TODO: Maybe update this to put it all into one nested query, no idea how to do that mongodb
+    try:
+        theater_id = cmpe202_db_client.showtimes.find_one({"_id": ObjectId(showtime_id)})["theater_id"]
+    except(Exception):
+        return "Bad showtime ID", 400
+
+    theater_seats = cmpe202_db_client.theaters.find_one({"_id": ObjectId(theater_id)})["seating_capacity"]
+    existing_tickets = list(cmpe202_db_client.ticket.find({"showtime_id": showtime_id}))
+    if existing_tickets:
+        existing = 0
+        for x in existing_tickets:
+            existing += int(x["ticket_count"])
+        if theater_seats - (existing + ticket_count) < 1:
+            return "Can't book more tickets than available seats", 409
     
     #TODO: charge user for movie (premium check logic in there)
     paid = True
     if (not paid):
         return jsonify({"message": "Too poor"}), 403
 
-    #Could add seat selection, but let's see how things go
     ticket = {
         "user_id": user_id,
         "showtime_id": showtime_id,
@@ -140,13 +155,11 @@ def get_user_tickets(*args, **kwargs):
 
 #Refunds a ticket for current user
 @resource.route('/api/user_ticket/<ticket_id>', methods=['DELETE'])
-def delete_ticket(ticket_id):
-    #TODO: verify user is logged in and get ID
-    user_id = 1
-
+@check_auth_any()
+def delete_ticket(ticket_id, *args, **kwargs):
     #TODO: verify showtime time hasn't passed
 
-    if (cmpe202_db_client.ticket.delete_one({"user_id": str(user_id), "_id": ObjectId(ticket_id)}).deleted_count):
+    if (cmpe202_db_client.ticket.delete_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)}).deleted_count):
         #TODO: give refund to user
         return "", 204
     else:
