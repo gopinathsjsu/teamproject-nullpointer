@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request
 import config.app_config as app_config
 from util.db_initializer import DBServiceInitializer
 from util.app_logger import AppLogger
-from util.helper import check_auth, set_token_vars, clean_list, check_auth_any, clean_obj
+from util.helper import check_auth, set_token_vars, clean_list, clean_obj
 
 
 resource = Blueprint('resource', __name__)
@@ -189,7 +189,7 @@ def get_user_tickets_admin(check_user_id, *args, **kwargs):
 
 #Returns the tickets registered to current user
 @resource.route('/api/user_tickets', methods=['GET'])
-@check_auth_any()
+@check_auth()
 def get_user_tickets(*args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
     clean_list(tickets)
@@ -199,7 +199,7 @@ def get_user_tickets(*args, **kwargs):
 
 #Refunds a ticket for current user
 @resource.route('/api/user_ticket/<ticket_id>', methods=['DELETE'])
-@check_auth_any()
+@check_auth()
 def delete_ticket(ticket_id, *args, **kwargs):
     #TODO: verify showtime time hasn't passed
 

@@ -63,25 +63,29 @@ def check_auth(roles=[]):
             authorized_cond = False
             if len(roles) == 0:
                 authorized_cond = True
-            else:
-                try:
-                    token = request.headers['x-access-token']
-                except KeyError:
-                    logger.error(f"Token is missing")
-                    return abort(make_response(jsonify({"message": "Token is missing"}), 403))  
-                try:
-                    decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
-                    user_id = decoded_token_obj["user_id"]
-                    user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
-                    if "Admin" in roles and "isAdmin" in user_data and user_data["isAdmin"]:
-                        authorized_cond = True
-                    if "Member" in roles and "isMember" in user_data and user_data["isMember"]:
-                        authorized_cond = True
+            try:
+                token = request.headers['x-access-token']
+            except KeyError:
+                logger.error(f"Token is missing")
+                return abort(make_response(jsonify({"message": "Token is missing"}), 403))  
+            try:
+                decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
+                user_id = decoded_token_obj["user_id"]
+                user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
-                except KeyError:
-                    logger.error(f"Token is invalid")
-                    return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
+                kwargs["user_id"] = user_id
+                kwargs["user"] = user_data["username"]
+                kwargs["is_member"] = user_data["isMember"]
+
+                if "Admin" in roles and "isAdmin" in user_data and user_data["isAdmin"]:
+                    authorized_cond = True
+                if "Member" in roles and "isMember" in user_data and user_data["isMember"]:
+                    authorized_cond = True
+
+            except KeyError:
+                logger.error(f"Token is invalid")
+                return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
             if not authorized_cond:
                 return abort(make_response(jsonify({"message": "User not Authorised"}), 401))
             return f(*args, **kwargs)
@@ -120,32 +124,13 @@ def set_token_vars():
                 return f(*args, **kwargs)
             
             try:
-                decoded_token_obj = decode_token(token)
-                kwargs["user_id"] = decoded_token_obj["user_id"]
-                kwargs["user"] = decoded_token_obj["username"]
-                kwargs["is_member"] = decoded_token_obj["isMember"]
-            except Exception as e:
-                logger.error(f"Token is invalid")
-                return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
-            return f(*args, **kwargs)
-        return decorated_function
-    return auth_wrapper_func
+                decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
+                user_id = decoded_token_obj["user_id"]
+                user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
-#Checks to make sure a user is signed in
-def check_auth_any():
-    def auth_wrapper_func(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            try:
-                token = request.headers['x-access-token']
-            except KeyError:
-                logger.error(f"Token is missing")
-                return abort(make_response(jsonify({"message": "Token is missing"}), 401))  
-            
-            try:
-                decoded_token_obj = decode_token(token)
-                kwargs["user_id"] = decoded_token_obj["user_id"]
-                kwargs["user"] = decoded_token_obj["username"]
+                kwargs["user_id"] = user_id
+                kwargs["user"] = user_data["username"]
+                kwargs["is_member"] = user_data["isMember"]
             except Exception as e:
                 logger.error(f"Token is invalid")
                 return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
