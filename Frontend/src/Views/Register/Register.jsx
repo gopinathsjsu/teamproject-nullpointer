@@ -1,4 +1,5 @@
 import "../Login/Login.scss"; //reuse Login.scss formatting (similar elements within pages)
+import Button from '../../Components/Button/Button';
 import React, {useState} from "react";
 // import { dispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +17,7 @@ const Register = () => {
   //Store username and password combination in database
   const createAccount = (e) => {
     e.preventDefault();
-    const user = {username, password};
+    const user = {username, password, isMember : false, isAdmin: false, points : 0};
     setIsPending(true);
     setError();
 
@@ -40,6 +41,7 @@ const Register = () => {
       if(resp.ok) {
         //note: upon registration, can redirect user to home page && automatically logged in
         console.log('new account added');
+        console.log(user);
         setIsPending(false);
         navigate("/Login");
       }
@@ -109,7 +111,7 @@ const Register = () => {
                 </div>
 
                 <p style={{ marginBottom: "20px"}}></p>
-                {<button onClick={createAccount}> Register </button>}
+                {<Button type="button-primary" onClick={createAccount}> Register </Button>}
                 <p className="error-message">{error}</p>
                 
                 <p style={{marginTop: "7%"}}>

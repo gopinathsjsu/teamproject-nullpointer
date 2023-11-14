@@ -1,3 +1,8 @@
+a{
+  color: white;
+  cursor: pointer;
+
+}
 .navbar{
   &-container{
     position: relative;
@@ -5,16 +10,30 @@
     display: flex;
     flex-direction: row;
     align-items: flex-end;
+    height: 40px;
     .left-content{
       display: flex;
       flex-direction: row;
       width: 50%;
       justify-content: space-between;
+      min-height: 36px;
     }
     .right-content {
       width: 50%;
       display: flex;
       justify-content: flex-end;
+      align-items: flex-start;
+      min-height: 36px;
+      .avatar{
+        width: 25%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        img{
+          border-radius: 12px;
+        }
+      }
     }
   }
   &-container::after{

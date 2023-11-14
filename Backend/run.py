@@ -12,7 +12,7 @@ from controllers.theater_employee import theater_employee
 from util.app_initializer import AppInitializer
 from util.app_logger import AppLogger
 from util.db_initializer import DBServiceInitializer
-from util.helper import generate_token, verify_user_cred
+from util.helper import clean_obj, decode_token, generate_token, fetch_user_details, verify_user_cred
 
 
 app = AppInitializer.get_instance(__name__).get_flask_app()
@@ -28,10 +28,10 @@ CORS(app, expose_headers=["x-attached-filename", "Content-Disposition"])
 DBServiceInitializer.get_db_instance(__name__)
 
 # Initializing Logger
-AppLogger.getInstance(__name__).getLogger()
+logger = AppLogger.getInstance(__name__).getLogger()
 
 
-@app.route('/api/theater_employee_login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def get_access_key():
     username = request.form.get("username", None) 
     password = request.form.get("password", None)
@@ -39,11 +39,29 @@ def get_access_key():
     if username is None or password is None:
         return abort(make_response(jsonify(error=f"Please provide Username or Password."), 400))
     
-    if verify_user_cred(username, password):
-        access_token = generate_token(username)
-        return jsonify({"access_token": access_token})
+    user_record = fetch_user_details(username)
+    if verify_user_cred(username, password, user_record):
+        access_token = generate_token(user_record)
+        clean_obj(user_record)
+        del user_record["password"]
+        return jsonify({"access_token": access_token, "user_data": user_record})
     
     return abort(make_response(jsonify(error=f"Incorrect Username or Password."), 400))
+
+
+@app.route('/api/user', methods=['GET'])
+def decode_access_token():
+    access_token = request.headers['x-access-token']
+
+    if access_token is None:
+        return abort(make_response(jsonify(error=f"Please provide x-access-token in headers"), 400))
+    
+    try:
+        user_data = decode_token(access_token)
+        return jsonify({"user_data": user_data})
+    except Exception as e:
+        logger.error(f"Token is invalid cannot be decoded")
+    return jsonify({"message": "Token is invalid cannot be decoded"})
 
 
 if __name__ == '__main__':

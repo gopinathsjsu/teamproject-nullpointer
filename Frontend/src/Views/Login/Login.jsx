@@ -1,11 +1,17 @@
-import "./Login.scss";
 import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import Button from '../../Components/Button/Button';
+import { login } from "../../Redux/userReducer";
+import "./Login.scss";
+import { host } from "../../env";
 
 
 const Login = () => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const dispatch = useDispatch();
 
   //username storage
   const [username, setUsername]=useState(null);
@@ -14,29 +20,38 @@ const Login = () => {
 
   //on button press, call getLogin
   const getLogin = () => {
-    const user = {username, password};
     setError();
 
-    fetch("http://localhost:8005/api/login", {
+    fetch(`${host}/api/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json"},
-      body: JSON.stringify(user)
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        username: username,
+        password: password
+      })
     })
-    .then((resp) => {
-      if(resp.ok) {
-        localStorage.setItem('user', JSON.stringify(user));
-        console.log(localStorage.getItem('user'));
-        console.log('logged in successfully');
-        navigate("/");
-      }
-      else {
-        console.log(resp)
-        setError("Error: Username or password is incorrect");
-      }
-    })
-    //return login info
-    // implement backend to login (verify if account exists && if not, give error)
-    //console.log("username: " + username + " password: " + password);
+      .then((resp) => resp.json())
+      .then((data) => {
+        if(data.error) {
+          setError(`Error: ${data.error}`);
+        }
+        else if (data.access_token) {
+          const { access_token, user_data } = data;
+          localStorage.setItem("x-access-token", access_token);
+          dispatch(login(user_data));
+
+          if(user_data.isAdmin) {
+            navigate("/admin");
+          }
+          else {
+            navigate("/");
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error during login:", error);
+        setError("An unexpected error occurred");
+      });
   }
   
   function updateUsername(e) {
@@ -81,7 +96,7 @@ const Login = () => {
             </div>
             
             <p style={{ marginBottom: "20px"}}></p>
-            <button onClick={getLogin}> Sign In </button>
+            <Button type="button-primary" onClick={getLogin}> Sign In </Button>
             <p className="error-message">{error}</p>
 
             <p style={{marginTop: "84px"}}></p>
