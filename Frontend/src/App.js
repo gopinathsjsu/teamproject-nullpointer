@@ -51,21 +51,17 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // fetch(`${host}/api/user_details`, {
-    //   method: "GET",
-    //   headers: { 
-    //     "Content-Type": "application/x-www-form-urlencoded",
-    //     'x-access-token': localStorage.getItem('x-access-token') 
-    //   },
-    // }).then((resp) => resp.json())
-    // .then((data) => {
-    //   dispatch((login(data)));
-    // })
-    dispatch(login({id:"655080ff20b140bcca6489d3",
-    isAdmin:false,
-    isMember:false,
-    points:0,
-    username:"admin"}))
+    if(!user?.id && localStorage.getItem('x-access-token'))
+      fetch(`${host}/api/user`, {
+        method: "GET",
+        headers: { 
+          "Content-Type": "application/x-www-form-urlencoded",
+          'x-access-token': localStorage.getItem('x-access-token') 
+        },
+      }).then((resp) => resp.json())
+      .then((data) => {
+        dispatch((login(data.user_data)));
+      })
   }, []);
 
   return (

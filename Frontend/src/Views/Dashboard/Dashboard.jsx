@@ -3,15 +3,27 @@ import "./Dashboard.scss";
 import Oppenheimer from '../../assets/oppenheimer.png';
 import Spiderman from '../../assets/spiderman.png';
 import Elemental from '../../assets/elemental.png';
+import { host } from '../../env';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const getLocations = () =>{
-    //return location of theatres
-  }
+  const getData = () =>{
+    fetch(`${host}/api/all_locations`)
+    .then((resp) => resp.json())
+    .then((data) => {
+      console.warn('111', data);
+    })
+  };
+
+  useEffect(() => {
+    getData();
+  }, [])
 
   const movies = [
     {
