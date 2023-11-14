@@ -76,7 +76,7 @@ def check_auth(roles=[]):
 
                     if "Admin" in roles and "isAdmin" in user_data and user_data["isAdmin"]:
                         authorized_cond = True
-                    if "Member" in roles and "isMember" in user_data and decoded_token_obj["isMember"]:
+                    if "Member" in roles and "isMember" in user_data and user_data["isMember"]:
                         authorized_cond = True
 
                 except KeyError:
