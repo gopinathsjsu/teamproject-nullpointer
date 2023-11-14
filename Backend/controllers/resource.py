@@ -72,15 +72,32 @@ def get_showtimes():
     return jsonify(showtimes), 200
 
 
+#Adds theater["showtimes"] to each theater
+def add_showtimes_to_theaters(theaters):
+    for theater in theaters:
+        theater["showtimes"] = list(cmpe202_db_client.showtimes.find({"theater_id": theater["_id"]}))
+
+
 #Returns theaters and their showtimes, search by location_id 
 @resource.route('/api/theaters/<location_id>', methods=['GET'])
 def get_theaters_by_location(location_id):
     theaters = list(cmpe202_db_client.theaters.find({"location_id": ObjectId(location_id)}))
-    for theater in theaters:
-        theater["showtimes"] = list(cmpe202_db_client.showtimes.find({"theater_id": theater["_id"]}))
+    add_showtimes_to_theaters(theaters)
 
     clean_list(theaters)
     return jsonify(theaters), 200
+
+
+#Returns all locations, their theaters, and their showtimes
+@resource.route('/api/all_locations', methods=['GET'])
+def get_all_locations():
+    locations = list(cmpe202_db_client.locations.find({}))
+    for location in locations:
+        location["theaters"] = list(cmpe202_db_client.theaters.find({"location_id": location["_id"]}))
+        add_showtimes_to_theaters(location["theaters"])
+
+    clean_list(locations)
+    return jsonify(locations), 200
 
 
 # @resource.route('/api/testadd', methods=['GET'])
