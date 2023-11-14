@@ -67,8 +67,8 @@ def create_account():
 @resource.route('/api/showtimes', methods=['GET'])
 def get_showtimes():
     showtimes = list(cmpe202_db_client.showtimes.find({}))
+    
     clean_list(showtimes)
-
     return jsonify(showtimes), 200
 
 
@@ -198,9 +198,8 @@ def buy_tickets(*args, **kwargs):
 @check_auth(roles=["Admin"])
 def get_user_tickets_admin(check_user_id, *args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(check_user_id)}))
-    for x in tickets:
-        x["_id"] = str(x["_id"])
 
+    clean_list(tickets)
     return jsonify(tickets), 200
 
 
@@ -209,8 +208,8 @@ def get_user_tickets_admin(check_user_id, *args, **kwargs):
 @check_auth()
 def get_user_tickets(*args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
-    clean_list(tickets)
 
+    clean_list(tickets)
     return jsonify(tickets), 200
 
 
