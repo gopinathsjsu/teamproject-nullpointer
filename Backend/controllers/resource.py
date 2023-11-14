@@ -75,6 +75,28 @@ def add_showtime_to_tickets(tickets):
     for ticket in tickets:
         ticket["showtime"] = cmpe202_db_client.showtimes.find_one({"_id": ticket["showtime_id"]})
 
+
+#Returns the number of remaining seats in showtime, expects ObjectId
+def get_remaining_seats(showtime_id):
+    try:
+        theater_id = cmpe202_db_client.showtimes.find_one({"_id": showtime_id})["theater_id"]
+    except(Exception):
+        return "Bad showtime ID", 400
+
+    theater_seats = cmpe202_db_client.theaters.find_one({"_id": theater_id})["seating_capacity"]
+
+    #OPTIMIZE
+    tmp = list(cmpe202_db_client.ticket.aggregate([{
+        "$match": {"showtime_id": showtime_id}},
+        {"$group": {
+            "_id": "null",
+            "sum": {"$sum": "$ticket_count"}
+        }}]))
+    used_seats = tmp[0]["sum"] if tmp else 0
+    
+    return theater_seats - used_seats
+
+
 # @resource.route('/api/testadd', methods=['GET'])
 # def get_ddshowtimes():
 #     showtime = {
@@ -140,7 +162,7 @@ def get_all_locations():
 
 
 #Buys a number of tickets for a given showtime
-#Body expected: showtime_id, ticket_count
+#Body expected: showtime_id (string), ticket_count (int)
 @resource.route('/api/buy_ticket', methods=['POST'])
 @set_token_vars()
 def buy_tickets(*args, **kwargs):
@@ -164,22 +186,10 @@ def buy_tickets(*args, **kwargs):
     if (ticket_count > 8):
         return "Only 8 tickets max", 400
 
-    #OPTIMIZE
-    try:
-        theater_id = cmpe202_db_client.showtimes.find_one({"_id": ObjectId(showtime_id)})["theater_id"]
-    except(Exception):
-        return "Bad showtime ID", 400
-
-    theater_seats = cmpe202_db_client.theaters.find_one({"_id": ObjectId(theater_id)})["seating_capacity"]
-    existing_tickets = list(cmpe202_db_client.ticket.find({"showtime_id": ObjectId(showtime_id)}))
-    if existing_tickets:
-        existing = 0
-        for x in existing_tickets:
-            existing += int(x["ticket_count"])
-        if theater_seats - (existing + ticket_count) < 1:
-            return "Can't book more tickets than available seats", 409
+    if get_remaining_seats(ObjectId(showtime_id)) - ticket_count < 0:
+        return "Can't book more tickets than available seats", 409
     
-    #TODO: charge user for movie (premium check logic in there)
+    #TODO: charge user for movie
     paid = True
     if (not paid):
         return jsonify({"message": "Too poor"}), 403
@@ -187,7 +197,7 @@ def buy_tickets(*args, **kwargs):
     ticket = {
         "user_id": ObjectId(user_id),
         "showtime_id": ObjectId(showtime_id),
-        "ticket_count": str(ticket_count)
+        "ticket_count": ticket_count
     }
 
     cmpe202_db_client.ticket.insert_one(ticket)
@@ -235,17 +245,21 @@ def delete_ticket(ticket_id, *args, **kwargs):
 @resource.route('/api/recent_movies', methods=['GET'])
 @check_auth()
 def get_recent_movies(*args, **kwargs):
-
-    #OPTIMIZE
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
         return "No tickets for user found", 404
 
     cur_date = datetime.now()
+    past_date = cur_date - timedelta(days=30)
     showtimes = []
     for ticket in tickets:
-        tmp = cmpe202_db_client.showtimes.find_one({"_id": ticket["showtime_id"]})
-        if tmp["show_date"] <= cur_date and tmp["show_date"] >= (cur_date - timedelta(days=30)):
+        tmp = cmpe202_db_client.showtimes.find_one({
+            "_id": ticket["showtime_id"], 
+            "show_date": {
+                "$gte": past_date,
+                "$lte": cur_date
+            }})
+        if tmp:
             showtimes.append(tmp)
     
     if not showtimes:
