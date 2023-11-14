@@ -49,7 +49,7 @@ def get_access_key():
     return abort(make_response(jsonify(error=f"Incorrect Username or Password."), 400))
 
 
-@app.route('/api/decode_access_token', methods=['GET'])
+@app.route('/api/user', methods=['GET'])
 def decode_access_token():
     access_token = request.headers['x-access-token']
 
@@ -57,8 +57,8 @@ def decode_access_token():
         return abort(make_response(jsonify(error=f"Please provide x-access-token in headers"), 400))
     
     try:
-        decoded_token_obj = decode_token(access_token)
-        return jsonify({"decoded_token_data": decoded_token_obj})
+        user_data = decode_token(access_token)
+        return jsonify({"user_data": user_data})
     except Exception as e:
         logger.error(f"Token is invalid cannot be decoded")
     return jsonify({"message": "Token is invalid cannot be decoded"})

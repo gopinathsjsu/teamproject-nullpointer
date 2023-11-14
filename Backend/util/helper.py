@@ -33,9 +33,9 @@ def verify_user_cred(username, password, user_record):
 def generate_token(user_record):
     data_to_encode = {
         "user_id": str(user_record["_id"]),
-        "username": user_record["username"],
-        "isMember": user_record["isMember"],
-        "isAdmin": user_record["isAdmin"],
+        # "username": user_record["username"],
+        # "isMember": user_record["isMember"],
+        # "isAdmin": user_record["isAdmin"],
         "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7)
     }
     token = jwt.encode(payload=data_to_encode, key=app_config.SECRET_KEY, algorithm='HS256')
@@ -44,8 +44,16 @@ def generate_token(user_record):
 
 
 def decode_token(token):
+    user_data = {}
     decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
-    return decoded_token_obj
+    try:
+        user_id = decoded_token_obj["user_id"]
+        rec = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)}, {"password": 0})
+        clean_obj(rec)
+        user_data = dict(user_data, **rec)
+    except KeyError:
+        logger.error("User ID not found in the token")
+    return user_data
 
 
 def check_auth(roles=[]):
@@ -61,17 +69,17 @@ def check_auth(roles=[]):
                 except KeyError:
                     logger.error(f"Token is missing")
                     return abort(make_response(jsonify({"message": "Token is missing"}), 403))  
-                
                 try:
-                    decoded_token_obj = decode_token(token)
-                    kwargs["user_id"] = decoded_token_obj["user_id"]
-                    kwargs["user"] = decoded_token_obj["username"]
+                    decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
+                    user_id = decoded_token_obj["user_id"]
+                    user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
-                    if "Admin" in roles and decoded_token_obj["isAdmin"]:
+                    if "Admin" in roles and "isAdmin" in user_data and user_data["isAdmin"]:
                         authorized_cond = True
-                    if "Member" in roles and decoded_token_obj["isMember"]:
+                    if "Member" in roles and "isMember" in user_data and decoded_token_obj["isMember"]:
                         authorized_cond = True
-                except Exception as e:
+
+                except KeyError:
                     logger.error(f"Token is invalid")
                     return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
             if not authorized_cond:
