@@ -64,42 +64,16 @@ def create_account():
     return jsonify({"message": "Successful"}), 201
 
 
-#Returns all showtimes
-@resource.route('/api/showtimes', methods=['GET'])
-def get_showtimes():
-    showtimes = list(cmpe202_db_client.showtimes.find({}))
-
-    clean_list(showtimes)
-    return jsonify(showtimes), 200
-
-
 #Adds theater["showtimes"] to each theater
 def add_showtimes_to_theaters(theaters):
     for theater in theaters:
         theater["showtimes"] = list(cmpe202_db_client.showtimes.find({"theater_id": theater["_id"]}))
 
 
-#Returns theaters and their showtimes, search by location_id 
-@resource.route('/api/theaters/<location_id>', methods=['GET'])
-def get_theaters_by_location(location_id):
-    theaters = list(cmpe202_db_client.theaters.find({"location_id": ObjectId(location_id)}))
-    add_showtimes_to_theaters(theaters)
-
-    clean_list(theaters)
-    return jsonify(theaters), 200
-
-
-#Returns all locations, their theaters, and their showtimes
-@resource.route('/api/all_locations', methods=['GET'])
-def get_all_locations():
-    locations = list(cmpe202_db_client.locations.find({}))
-    for location in locations:
-        location["theaters"] = list(cmpe202_db_client.theaters.find({"location_id": location["_id"]}))
-        add_showtimes_to_theaters(location["theaters"])
-
-    clean_list(locations)
-    return jsonify(locations), 200
-
+#Adds ticket["showtime"] to each ticket
+def add_showtime_to_tickets(tickets):
+    for ticket in tickets:
+        ticket["showtime"] = cmpe202_db_client.showtimes.find_one({"_id": ticket["showtime_id"]})
 
 # @resource.route('/api/testadd', methods=['GET'])
 # def get_ddshowtimes():
@@ -132,6 +106,37 @@ def get_all_locations():
 #     cmpe202_db_client.showtimes.insert_one(showtime4)
 
 #     return "", 200
+
+
+#Returns all showtimes
+@resource.route('/api/showtimes', methods=['GET'])
+def get_showtimes():
+    showtimes = list(cmpe202_db_client.showtimes.find({}))
+
+    clean_list(showtimes)
+    return jsonify(showtimes), 200
+
+
+#Returns theaters and their showtimes, search by location_id 
+@resource.route('/api/theaters/<location_id>', methods=['GET'])
+def get_theaters_by_location(location_id):
+    theaters = list(cmpe202_db_client.theaters.find({"location_id": ObjectId(location_id)}))
+    add_showtimes_to_theaters(theaters)
+
+    clean_list(theaters)
+    return jsonify(theaters), 200
+
+
+#Returns all locations, their theaters, and their showtimes
+@resource.route('/api/all_locations', methods=['GET'])
+def get_all_locations():
+    locations = list(cmpe202_db_client.locations.find({}))
+    for location in locations:
+        location["theaters"] = list(cmpe202_db_client.theaters.find({"location_id": location["_id"]}))
+        add_showtimes_to_theaters(location["theaters"])
+
+    clean_list(locations)
+    return jsonify(locations), 200
 
 
 #Buys a number of tickets for a given showtime
@@ -196,6 +201,7 @@ def buy_tickets(*args, **kwargs):
 @check_auth(roles=["Admin"])
 def get_user_tickets_admin(check_user_id, *args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(check_user_id)}))
+    add_showtime_to_tickets(tickets)
 
     clean_list(tickets)
     return jsonify(tickets), 200
@@ -206,6 +212,7 @@ def get_user_tickets_admin(check_user_id, *args, **kwargs):
 @check_auth()
 def get_user_tickets(*args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
+    add_showtime_to_tickets(tickets)
 
     clean_list(tickets)
     return jsonify(tickets), 200
