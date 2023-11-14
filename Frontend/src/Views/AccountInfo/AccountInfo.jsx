@@ -1,11 +1,52 @@
 import "./AccountInfo.scss";
 import React, {useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
+import { host } from "../../env";
 
 
 const AccountInfo = () => {
     const [accountInfo, setAccountInfo] = useState('');
 
+    const [movies, setMovies] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+      
+    useEffect(() => {
+        const fetchData = async () => {
+        try {
+           // const token = localStorage.getItem('x-access-token');
+            const response = await fetch(`${host}/api/recent_movies`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-access-token': localStorage.getItem('x-access-token'),
+                },
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+    
+            const data = await response.json();
+            setMovies(data);
+            setIsLoading(false);
+        } 
+        catch (error) {
+            setError('Error fetching data');
+            setIsLoading(false);
+        }
+        };
+        fetchData();
+    }, []);
+
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
     /* required: back end API
         API 1: get_user_info (retrieve username/membership/points value)
         API 2: get_previous_tickets (retrieve list of previous movie tickets)
@@ -40,6 +81,7 @@ const AccountInfo = () => {
                 <div className="info-container">
                     <h1 className="title">Movies Watched (past 30 Days)</h1>
                     <div className="list-box">
+                        <p1>${movies}</p1>
                     </div>
                 </div>
             </div>

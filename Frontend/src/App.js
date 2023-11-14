@@ -30,7 +30,7 @@ const router = (user) => createBrowserRouter([
   },
   {
     path: "/account",
-    element: user?.isMember?  <AccountInfo />: <Navigate to="/"/>,
+    element: user?  <AccountInfo />: <Navigate to="/"/>,
   },
   {
     path: '/checkout',
