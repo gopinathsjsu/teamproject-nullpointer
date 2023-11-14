@@ -104,13 +104,14 @@ def clean_obj(obj):
 
 
 #Cleans the whole list
-def clean_list(ret):
-    for obj in ret:
-        for k in obj:
-            if isinstance(obj[k], ObjectId):
-                obj[k] = str(obj[k])
-            if isinstance(obj[k], list):
-                clean_list(obj[k])
+def clean_list(obj):
+    for k in obj:
+        if isinstance(k, (list, dict)):
+            clean_list(k)
+        elif isinstance(obj[k], (list, dict)):
+            clean_list(obj[k])
+        elif isinstance(obj[k], ObjectId):
+            obj[k] = str(obj[k])
 
 
 #To set the token variables without requiring it

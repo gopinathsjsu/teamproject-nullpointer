@@ -5,6 +5,7 @@ import config.app_config as app_config
 from util.db_initializer import DBServiceInitializer
 from util.app_logger import AppLogger
 from util.helper import check_auth, set_token_vars, clean_list, clean_obj
+from datetime import datetime, timedelta
 
 
 resource = Blueprint('resource', __name__)
@@ -67,7 +68,7 @@ def create_account():
 @resource.route('/api/showtimes', methods=['GET'])
 def get_showtimes():
     showtimes = list(cmpe202_db_client.showtimes.find({}))
-    
+
     clean_list(showtimes)
     return jsonify(showtimes), 200
 
@@ -102,36 +103,33 @@ def get_all_locations():
 
 # @resource.route('/api/testadd', methods=['GET'])
 # def get_ddshowtimes():
-#     location = {
-#         "name": "Milpitas"
-#     }
-#     cmpe202_db_client.locations.insert_one(location)
-
-#     theater = {
-#         "name": "Testing Theater3",
-#         "seating_capacity": 10,
-#         "location_id": location["_id"]
-#     }
-#     cmpe202_db_client.theaters.insert_one(theater)
-
-#     theater2 = {
-#         "name": "Testing Theater4",
-#         "seating_capacity": 8,
-#         "location_id": location["_id"]
-#     }
-#     cmpe202_db_client.theaters.insert_one(theater2)
-
 #     showtime = {
 #         "movie_id": ObjectId("654b100e843cc2a163b985fc"),
-#         "theater_id": theater["_id"]
+#         "theater_id": ObjectId("65531f0438e5bb69d4e31b0d"),
+#         "show_date": datetime(2023, 11, 10)
 #     }
 #     cmpe202_db_client.showtimes.insert_one(showtime)
 
 #     showtime2 = {
 #         "movie_id": ObjectId("654b107a843cc2a163b98605"),
-#         "theater_id": theater2["_id"]
+#         "theater_id": ObjectId("65531f0438e5bb69d4e31b0d"),
+#         "show_date": datetime(2023, 11, 10)
 #     }
 #     cmpe202_db_client.showtimes.insert_one(showtime2)
+
+#     showtime3 = {
+#         "movie_id": ObjectId("654b107a843cc2a163b98605"),
+#         "theater_id": ObjectId("65531f0438e5bb69d4e31b0d"),
+#         "show_date": datetime(2023, 11, 11)
+#     }
+#     cmpe202_db_client.showtimes.insert_one(showtime3)
+
+#     showtime4 = {
+#         "movie_id": ObjectId("654b107a843cc2a163b98605"),
+#         "theater_id": ObjectId("65531f0438e5bb69d4e31b0d"),
+#         "show_date": datetime(2023, 11, 18)
+#     }
+#     cmpe202_db_client.showtimes.insert_one(showtime4)
 
 #     return "", 200
 
@@ -161,7 +159,7 @@ def buy_tickets(*args, **kwargs):
     if (ticket_count > 8):
         return "Only 8 tickets max", 400
 
-    #TODO: Maybe update this to put it all into one nested query, no idea how to do that mongodb
+    #OPTIMIZE
     try:
         theater_id = cmpe202_db_client.showtimes.find_one({"_id": ObjectId(showtime_id)})["theater_id"]
     except(Exception):
@@ -224,3 +222,30 @@ def delete_ticket(ticket_id, *args, **kwargs):
         return "", 204
     else:
         return jsonify({"message": "Requested ticket not found or doesn't belong to user"}), 400
+
+
+#Returns all showtimes for user within past 30 days, including movie data
+@resource.route('/api/recent_movies', methods=['GET'])
+@check_auth()
+def get_recent_movies(*args, **kwargs):
+
+    #OPTIMIZE
+    tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
+    if not tickets:
+        return "No tickets for user found", 404
+
+    cur_date = datetime.now()
+    showtimes = []
+    for ticket in tickets:
+        tmp = cmpe202_db_client.showtimes.find_one({"_id": ticket["showtime_id"]})
+        if tmp["show_date"] <= cur_date and tmp["show_date"] >= (cur_date - timedelta(days=30)):
+            showtimes.append(tmp)
+    
+    if not showtimes:
+        return "No movies watched within the past 30 days", 404
+    
+    for show in showtimes:
+        show["movie"] = cmpe202_db_client.movies.find_one({"_id": show["movie_id"]})
+
+    clean_list(showtimes)
+    return jsonify(showtimes), 200
