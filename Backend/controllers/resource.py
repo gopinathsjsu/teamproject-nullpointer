@@ -72,21 +72,51 @@ def get_showtimes():
     return jsonify(showtimes), 200
 
 
-@resource.route('/api/testadd', methods=['GET'])
-def get_ddshowtimes():
-    theater = {
-        "name": "Testing Theater2",
-        "seating_capacity": 10
-    }
-    cmpe202_db_client.theaters.insert_one(theater)
+#Returns theaters and their showtimes, search by location_id 
+@resource.route('/api/theaters/<location_id>', methods=['GET'])
+def get_theaters_by_location(location_id):
+    theaters = list(cmpe202_db_client.theaters.find({"location_id": ObjectId(location_id)}))
+    for theater in theaters:
+        theater["showtimes"] = list(cmpe202_db_client.showtimes.find({"theater_id": theater["_id"]}))
 
-    showtime = {
-        "movie_id": ObjectId("654b100e843cc2a163b985fc"),
-        "theater_id": theater["_id"]
-    }
-    cmpe202_db_client.showtimes.insert_one(showtime)
+    clean_list(theaters)
+    return jsonify(theaters), 200
 
-    return "", 200
+
+# @resource.route('/api/testadd', methods=['GET'])
+# def get_ddshowtimes():
+#     location = {
+#         "name": "Milpitas"
+#     }
+#     cmpe202_db_client.locations.insert_one(location)
+
+#     theater = {
+#         "name": "Testing Theater3",
+#         "seating_capacity": 10,
+#         "location_id": location["_id"]
+#     }
+#     cmpe202_db_client.theaters.insert_one(theater)
+
+#     theater2 = {
+#         "name": "Testing Theater4",
+#         "seating_capacity": 8,
+#         "location_id": location["_id"]
+#     }
+#     cmpe202_db_client.theaters.insert_one(theater2)
+
+#     showtime = {
+#         "movie_id": ObjectId("654b100e843cc2a163b985fc"),
+#         "theater_id": theater["_id"]
+#     }
+#     cmpe202_db_client.showtimes.insert_one(showtime)
+
+#     showtime2 = {
+#         "movie_id": ObjectId("654b107a843cc2a163b98605"),
+#         "theater_id": theater2["_id"]
+#     }
+#     cmpe202_db_client.showtimes.insert_one(showtime2)
+
+#     return "", 200
 
 
 #Buys a number of tickets for a given showtime

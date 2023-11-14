@@ -105,6 +105,8 @@ def clean_list(ret):
         for k in obj:
             if isinstance(obj[k], ObjectId):
                 obj[k] = str(obj[k])
+            if isinstance(obj[k], list):
+                clean_list(obj[k])
 
 
 #To set the token variables without requiring it
