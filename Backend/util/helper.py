@@ -51,6 +51,8 @@ def decode_token(token):
         rec = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)}, {"password": 0})
 
         rec["isMember"] = rec["vip_until"] >= datetime.datetime.now()
+        if "isAdmin" not in rec:    #POST_PURGE remove
+            rec["isAdmin"] = rec["is_admin"]
 
         clean_obj(rec)
         user_data = dict(user_data, **rec)
@@ -72,25 +74,24 @@ def check_auth(roles=[]):
             except KeyError:
                 logger.error(f"Token is missing")
                 return abort(make_response(jsonify({"message": "Token is missing"}), 403))  
+            
             try:
                 decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
                 user_id = decoded_token_obj["user_id"]
                 user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
-                is_member = True if user_data["vip_until"] >= datetime.datetime.now() else False
-
                 kwargs["user_id"] = user_id
                 kwargs["user"] = user_data["username"]
-                kwargs["is_member"] = is_member
+                kwargs["is_member"] = user_data["isMember"]
 
                 if "Admin" in roles and "isAdmin" in user_data and user_data["isAdmin"]:
                     authorized_cond = True
-                if "Member" in roles and is_member:
+                if "Member" in roles and user_data["isMember"]:
                     authorized_cond = True
-
             except KeyError:
                 logger.error(f"Token is invalid")
                 return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
+            
             if not authorized_cond:
                 return abort(make_response(jsonify({"message": "User not Authorised"}), 401))
             return f(*args, **kwargs)
@@ -135,11 +136,9 @@ def set_token_vars():
                 user_id = decoded_token_obj["user_id"]
                 user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
-                is_member = True if user_data["vip_until"] >= datetime.datetime.now() else False
-
                 kwargs["user_id"] = user_id
                 kwargs["user"] = user_data["username"]
-                kwargs["is_member"] = is_member
+                kwargs["is_member"] = user_data["isMember"]
             except Exception as e:
                 logger.error(f"Token is invalid")
                 return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
