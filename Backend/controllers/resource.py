@@ -135,6 +135,7 @@ def get_remaining_seats(showtime_id):
 
 #     return jsonify({"message": "", 200
 
+#TODO: remove once db is set
 @resource.route('/api/cleandb', methods=['DELETE'])
 def get_showtsdfsdfimes():
     cmpe202_db_client.users.delete_many({})
@@ -215,9 +216,9 @@ def buy_tickets(*args, **kwargs):
     ticket = {
         "user_id": ObjectId(user_id),
         "showtime_id": ObjectId(showtime_id),
-        "ticket_count": ticket_count
+        "ticket_count": ticket_count,
+        "paid": 10.5
     }
-
     cmpe202_db_client.tickets.insert_one(ticket)
 
     clean_obj(ticket)
