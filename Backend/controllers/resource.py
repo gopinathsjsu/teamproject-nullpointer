@@ -81,7 +81,7 @@ def get_remaining_seats(showtime_id):
     try:
         theater_id = cmpe202_db_client.showtimes.find_one({"_id": showtime_id})["theater_id"]
     except(Exception):
-        return "Bad showtime ID", 400
+        return jsonify({"message": "Bad showtime ID"}), 400
 
     theater_seats = cmpe202_db_client.theaters.find_one({"_id": theater_id})["seating_capacity"]
 
@@ -127,7 +127,7 @@ def get_remaining_seats(showtime_id):
 #     }
 #     cmpe202_db_client.showtimes.insert_one(showtime4)
 
-#     return "", 200
+#     return jsonify({"message": "", 200
 
 
 #Returns all showtimes
@@ -181,13 +181,13 @@ def buy_tickets(*args, **kwargs):
     if ("showtime_id" in val):
             showtime_id = val["showtime_id"]
     else:
-        return "Missing showtime_id", 400
+        return jsonify({"message": "Missing showtime_id"}), 400
     
     if (ticket_count > 8):
-        return "Only 8 tickets max", 400
+        return jsonify({"message": "Only 8 tickets max"}), 400
 
     if get_remaining_seats(ObjectId(showtime_id)) - ticket_count < 0:
-        return "Can't book more tickets than available seats", 409
+        return jsonify({"message": "Can't book more tickets than available seats"}), 409
     
     #TODO: charge user for movie
     paid = True
@@ -212,7 +212,7 @@ def buy_tickets(*args, **kwargs):
 def get_user_tickets_admin(check_user_id, *args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(check_user_id)}))
     if not tickets:
-        return "No tickets for user found", 404
+        return jsonify({"message": "No tickets for user found"}), 404
     add_showtime_to_tickets(tickets)
 
     clean_list(tickets)
@@ -225,7 +225,7 @@ def get_user_tickets_admin(check_user_id, *args, **kwargs):
 def get_user_tickets(*args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
-        return "No tickets for user found", 404
+        return jsonify({"message": "No tickets for user found"}), 404
     add_showtime_to_tickets(tickets)
 
     clean_list(tickets)
@@ -238,7 +238,7 @@ def get_user_tickets(*args, **kwargs):
 def get_prev_user_tickets(*args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
-        return "No tickets for user found", 404
+        return jsonify({"message": "No tickets for user found"}), 404
 
     cur_date = datetime.now()
     prev_tickets = []
@@ -253,7 +253,7 @@ def get_prev_user_tickets(*args, **kwargs):
             prev_tickets.append(ticket)
     
     if not prev_tickets:
-        return "No movies watched", 404
+        return jsonify({"message": "No movies watched"}), 404
     
     for ticket in prev_tickets:
         ticket["showtime"]["movie"] = cmpe202_db_client.movies.find_one({"_id": ticket["showtime"]["movie_id"]})
@@ -268,7 +268,7 @@ def get_prev_user_tickets(*args, **kwargs):
 def get_future_user_tickets(*args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
-        return "No tickets for user found", 404
+        return jsonify({"message": "No tickets for user found"}), 404
 
     cur_date = datetime.now()
     future_tickets = []
@@ -283,7 +283,7 @@ def get_future_user_tickets(*args, **kwargs):
             future_tickets.append(ticket)
     
     if not future_tickets:
-        return "No movies watched", 404
+        return jsonify({"message": "No movies watched"}), 404
     
     for ticket in future_tickets:
         ticket["showtime"]["movie"] = cmpe202_db_client.movies.find_one({"_id": ticket["showtime"]["movie_id"]})
@@ -300,7 +300,7 @@ def delete_ticket(ticket_id, *args, **kwargs):
 
     if (cmpe202_db_client.ticket.delete_one({"user_id": ObjectId(kwargs["user_id"]), "_id": ObjectId(ticket_id)}).deleted_count):
         #TODO: give refund to user
-        return "", 204
+        return jsonify({"message": "Success"}), 204
     else:
         return jsonify({"message": "Requested ticket not found or doesn't belong to user"}), 400
 
@@ -311,7 +311,7 @@ def delete_ticket(ticket_id, *args, **kwargs):
 def get_recent_movies(*args, **kwargs):
     tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
-        return "No tickets for user found", 404
+        return jsonify({"message": "No tickets for user found"}), 404
 
     cur_date = datetime.now()
     past_date = cur_date - timedelta(days=30)
@@ -327,7 +327,7 @@ def get_recent_movies(*args, **kwargs):
             showtimes.append(tmp)
     
     if not showtimes:
-        return "No movies watched within the past 30 days", 404
+        return jsonify({"message": "No movies watched within the past 30 days"}), 404
     
     for show in showtimes:
         show["movie"] = cmpe202_db_client.movies.find_one({"_id": show["movie_id"]})
