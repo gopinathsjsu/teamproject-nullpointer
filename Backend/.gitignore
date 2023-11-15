@@ -7,3 +7,4 @@ __pychache__
 .flake8
 mlruns
 venv
+*.log
