@@ -135,6 +135,18 @@ def get_remaining_seats(showtime_id):
 
 #     return jsonify({"message": "", 200
 
+@resource.route('/api/cleandb', methods=['DELETE'])
+def get_showtsdfsdfimes():
+    cmpe202_db_client.users.delete_many({})
+    cmpe202_db_client.movies.delete_many({})
+    cmpe202_db_client.locations.delete_many({})
+    cmpe202_db_client.theaters.delete_many({})
+    cmpe202_db_client.discounts.delete_many({})
+    cmpe202_db_client.showtimes.delete_many({})
+    cmpe202_db_client.tickets.delete_many({})
+
+    return jsonify(""), 200
+
 
 #Returns all showtimes
 @resource.route('/api/showtimes', methods=['GET'])

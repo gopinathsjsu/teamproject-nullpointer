@@ -15,7 +15,7 @@ from controllers.theater_employee import theater_employee
 from util.app_initializer import AppInitializer
 from util.app_logger import AppLogger
 from util.db_initializer import DBServiceInitializer
-from util.helper import clean_obj, decode_token, generate_token, fetch_user_details, verify_user_cred, register_user
+from util.helper import clean_obj, decode_token, generate_token, fetch_user_details, verify_user_cred, register_user, check_auth
 
 
 app = AppInitializer.get_instance(__name__).get_flask_app()
@@ -67,7 +67,6 @@ def get_access_key():
 def register():
     val = request.get_json()
 
-    #TODO: Change to hash
     username = val["username"] if "username" in val else None
     password = val["password"] if "password" in val else None
 
@@ -80,6 +79,31 @@ def register():
         "username": username,
         "password": hashed_password,
         "is_admin": False,
+        "points": 0,
+        "vip_until": datetime.now(),
+    }
+
+    return register_user(user)
+
+
+#To create a new admin account, only admins can create new admins
+@app.route('/api/create_account_admin', methods=['POST'])
+@check_auth(roles=["Admin"])
+def register_admin(*args, **kwargs):
+    val = request.get_json()
+
+    username = val["username"] if "username" in val else None
+    password = val["password"] if "password" in val else None
+
+    if not username or not password:
+        return jsonify({"message": "Missing username or password"}), 400
+    
+    hashed_password = hasher.generate_password_hash(password).decode('utf-8')
+
+    user = {
+        "username": username,
+        "password": hashed_password,
+        "is_admin": True,
         "points": 0,
         "vip_until": datetime.now(),
     }
