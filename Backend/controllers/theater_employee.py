@@ -14,6 +14,10 @@ logger = AppLogger.getInstance(__name__).getLogger()
 cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collection_instance(app_config.db_name)
 
 
+#TODO: Check for valid input
+#TODO: Fix delete routes to cascade, so deleting a movie refunds all tickets for that movie and so on
+
+
 #Expects in body: "movie_name" (str)
 @theater_employee.route('/api/theater_employee/insert_movie', methods=['POST'])
 @check_auth(roles=["Admin"])
@@ -239,12 +243,12 @@ def insert_discount(*args, **kwargs):
         discount_data["end_hour"] = data["end_hour"]
 
     if "start_date" in data:
-        discount_data["start_date"] = data["start_date"]
+        discount_data["start_date"] = datetime.datetime.fromisoformat(data["start_date"])
     else:
         discount_data["start_date"] = datetime.datetime.now()
 
     if "end_date" in data:
-        discount_data["end_date"] = data["end_date"]
+        discount_data["end_date"] = datetime.datetime.fromisoformat(data["end_date"])
     else:
         discount_data["end_date"] = datetime.datetime.now() + datetime.timedelta(days=365)
 
@@ -283,52 +287,80 @@ def delete_discount(discount_id, *args, **kwargs):
     return jsonify({"message": "discount Deletion Successfull"})
 
 
-@theater_employee.route('/api/theater_employee/insert_showtimes', methods=['POST'])
+#Expects in body: "theater_id" (str), "movie_id" (str), "show_date" (str) (ISO 8601 datetime format)
+@theater_employee.route('/api/theater_employee/insert_showtime', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_showtimes(*args, **kwargs):
     data = request.get_json()
 
-    showtime_ids = []
-    show_days = dict(data["show_days"])
-    for show_day_rec in show_days:
-        show_day_timestamp = datetime.datetime.strptime(show_day_rec["show_day_timestamp"], "%d%b%Y%H%M%S") 
-        show_day = calendar.day_name[show_day_timestamp.weekday()]
-        for show_time in show_day_rec["show_times"]: 
-            showtime_data = {
-                "theater_id": ObjectId(data["theater_id"]),
-                "movie_id": data["movie_id"],
-                "show_date": datetime.datetime.strptime(show_day_timestamp, "%d%b%Y%H%M%S"),
-                "show_day": show_day,
-                "show_time": datetime.datetime.strptime(show_time, "%H:%M:%S"),
-                "seating_capacity": data["seating_capacity"],
-                "created": datetime.datetime.utcnow(),
-                "discount_criteria": data["discount_criteria"],
-                "user": kwargs["user"],
-                "seats_filled": 0
-            }
+    showtime_data = {
+        "theater_id": ObjectId(data["theater_id"]),
+        "movie_id": ObjectId(data["movie_id"]),
+        "show_date": datetime.datetime.fromisoformat(data["show_date"]),
+        "added_date": datetime.datetime.now(),
+        "added_by": kwargs["user"]
+    }
+    showtime_id = cmpe202_db_client.showtimes.insert_one(showtime_data).inserted_id
 
-            showtime_id = cmpe202_db_client.showtimes.insert_one(showtime_data).inserted_id
-            showtime_ids.append(str(showtime_id))
-            logger.info("New Showtime Inserted : ID ({0})".format(str(showtime_id)))
+    logger.info("New Showtime Inserted : ID ({0})".format(str(showtime_id)))
 
-    return jsonify({"showtime_ids": showtime_ids})
+    return jsonify({"showtime_id": str(showtime_id)})
+
+    # data = request.get_json()
+
+    # showtime_ids = []
+    # show_days = dict(data["show_days"])
+    # for show_day_rec in show_days:
+    #     show_day_timestamp = datetime.datetime.strptime(show_day_rec["show_day_timestamp"], "%d%b%Y%H%M%S") 
+    #     show_day = calendar.day_name[show_day_timestamp.weekday()]
+    #     for show_time in show_day_rec["show_times"]: 
+    #         showtime_data = {
+    #             "theater_id": ObjectId(data["theater_id"]),
+    #             "movie_id": data["movie_id"],
+    #             "show_date": datetime.datetime.strptime(show_day_timestamp, "%d%b%Y%H%M%S"),
+    #             "seating_capacity": data["seating_capacity"],
+    #             "created": datetime.datetime.utcnow(),
+    #             "discount_criteria": data["discount_criteria"],
+    #             "user": kwargs["user"],
+    #             "seats_filled": 0
+    #         }
+
+    #         showtime_id = cmpe202_db_client.showtimes.insert_one(showtime_data).inserted_id
+    #         showtime_ids.append(str(showtime_id))
+    #         logger.info("New Showtime Inserted : ID ({0})".format(str(showtime_id)))
+
+    # return jsonify({"showtime_ids": showtime_ids})
 
 
-@theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PUT'])
+@theater_employee.route('/api/theater_employee/get_showtimes', methods=['GET'])
 @check_auth(roles=["Admin"])
-def update_showtime(showtime_id, *args, **kwargs):
-    data = request.get_json()
+def get_showtimes(*args, **kwargs):
+    showtimes = list(cmpe202_db_client.showtimes.find({
+        "$or": [
+            {"deleted": {"$exists": False}},
+            {"deleted": False}
+        ]
+    }))
+        
+    clean_list(showtimes)
+    return jsonify(showtimes)
 
-    cmpe202_db_client.showtimes.update_one(
-        {"_id": ObjectId(showtime_id)},
-        {"$set": {
-            "discount_criteria": data["discount_criteria"]
-        }}
-    )
 
-    logger.info("Showtime discount_criteria Updated : ID ({0})".format(str(showtime_id)))
+# @theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PUT'])
+# @check_auth(roles=["Admin"])
+# def update_showtime(showtime_id, *args, **kwargs):
+#     data = request.get_json()
 
-    return jsonify({"message": "Showtime discount_criteria Updation Successfull"})
+#     cmpe202_db_client.showtimes.update_one(
+#         {"_id": ObjectId(showtime_id)},
+#         {"$set": {
+#             "discount_criteria": data["discount_criteria"]
+#         }}
+#     )
+
+#     logger.info("Showtime discount_criteria Updated : ID ({0})".format(str(showtime_id)))
+
+#     return jsonify({"message": "Showtime discount_criteria Updation Successfull"})
 
 
 @theater_employee.route('/api/theater_employee/delete_showtime/<showtime_id>', methods=['DELETE'])
