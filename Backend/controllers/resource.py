@@ -92,7 +92,7 @@ def get_remaining_seats(showtime_id):
     theater_seats = cmpe202_db_client.theaters.find_one({"_id": theater_id})["seating_capacity"]
 
     #OPTIMIZE
-    tmp = list(cmpe202_db_client.ticket.aggregate([{
+    tmp = list(cmpe202_db_client.tickets.aggregate([{
         "$match": {"showtime_id": showtime_id}},
         {"$group": {
             "_id": "null",
@@ -206,7 +206,7 @@ def buy_tickets(*args, **kwargs):
         "ticket_count": ticket_count
     }
 
-    cmpe202_db_client.ticket.insert_one(ticket)
+    cmpe202_db_client.tickets.insert_one(ticket)
 
     clean_obj(ticket)
     return jsonify(ticket), 201
@@ -216,7 +216,7 @@ def buy_tickets(*args, **kwargs):
 @resource.route('/api/user_tickets/<check_user_id>', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_user_tickets_admin(check_user_id, *args, **kwargs):
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(check_user_id)}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(check_user_id)}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
     add_showtime_to_tickets(tickets)
@@ -229,7 +229,7 @@ def get_user_tickets_admin(check_user_id, *args, **kwargs):
 @resource.route('/api/user_tickets', methods=['GET'])
 @check_auth()
 def get_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
     add_showtime_to_tickets(tickets)
@@ -242,7 +242,7 @@ def get_user_tickets(*args, **kwargs):
 @resource.route('/api/prev_user_tickets', methods=['GET'])
 @check_auth()
 def get_prev_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
@@ -272,7 +272,7 @@ def get_prev_user_tickets(*args, **kwargs):
 @resource.route('/api/future_user_tickets', methods=['GET'])
 @check_auth()
 def get_future_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
@@ -289,7 +289,7 @@ def get_future_user_tickets(*args, **kwargs):
             future_tickets.append(ticket)
     
     if not future_tickets:
-        return jsonify({"message": "No movies watched"}), 404
+        return jsonify({"message": "No movies to be watched"}), 404
     
     for ticket in future_tickets:
         ticket["showtime"]["movie"] = cmpe202_db_client.movies.find_one({"_id": ticket["showtime"]["movie_id"]})
@@ -304,7 +304,7 @@ def get_future_user_tickets(*args, **kwargs):
 def delete_ticket(ticket_id, *args, **kwargs):
     #TODO: verify showtime time hasn't passed
 
-    if (cmpe202_db_client.ticket.delete_one({"user_id": ObjectId(kwargs["user_id"]), "_id": ObjectId(ticket_id)}).deleted_count):
+    if (cmpe202_db_client.tickets.delete_one({"user_id": ObjectId(kwargs["user_id"]), "_id": ObjectId(ticket_id)}).deleted_count):
         #TODO: give refund to user
         return jsonify({"message": "Success"}), 204
     else:
@@ -315,7 +315,7 @@ def delete_ticket(ticket_id, *args, **kwargs):
 @resource.route('/api/recent_movies', methods=['GET'])
 @check_auth()
 def get_recent_movies(*args, **kwargs):
-    tickets = list(cmpe202_db_client.ticket.find({"user_id": ObjectId(kwargs["user_id"])}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(kwargs["user_id"])}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
