@@ -100,9 +100,6 @@ def clean_obj(obj):
         value = obj[key]
         if isinstance(value, ObjectId):
             obj[key] = str(value)
-        if key == "_id":
-            obj["id"] = obj["_id"]
-            del obj["_id"]
 
 
 #Cleans the whole list, including changing datetime objects to ISO 8601 strings
@@ -144,3 +141,14 @@ def set_token_vars():
             return f(*args, **kwargs)
         return decorated_function
     return auth_wrapper_func
+
+
+#Registers given user 
+def register_user(user):
+    # check if username does not exist in database
+    userExists = cmpe202_db_client.users.find_one({"username": user["username"]})
+    if userExists:
+        return jsonify({"message": "Username already taken"}), 409
+
+    cmpe202_db_client.users.insert_one(user)
+    return jsonify({"message": "Successful"}), 201

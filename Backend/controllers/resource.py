@@ -29,7 +29,7 @@ def fetch_movie_showtimes():
 
 
 @resource.route('/api/login_old', methods=['POST'])
-def login():
+def login_old():
     try:
         val = request.get_json()
         # check if username exists in the database
@@ -51,8 +51,8 @@ def login():
         print(f"An error occurred: {str(e)}")
         return jsonify({"message": "Internal Server Error"}), 500
 
-@resource.route('/api/create_account', methods=['POST'])
-def create_account():
+@resource.route('/api/create_account_old', methods=['POST'])
+def create_account_old():
     val = request.get_json()
 
     # check if username does not exist in database
