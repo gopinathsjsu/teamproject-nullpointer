@@ -120,10 +120,32 @@ def decode_access_token():
     
     try:
         user_data = decode_token(access_token)
+        clean_obj(user_data)
         return jsonify({"user_data": user_data})
     except Exception as e:
         logger.error(f"Token is invalid cannot be decoded")
     return jsonify({"message": "Token is invalid cannot be decoded"})
+
+
+#TODO: remove once db is stable
+#Creates a default admin account, here for easy automation
+@app.route('/api/create_account_admin_default', methods=['POST'])
+def register_admin_default():
+
+    username = "Admin"
+    password = "Password"
+    
+    hashed_password = hasher.generate_password_hash(password).decode('utf-8')
+
+    user = {
+        "username": username,
+        "password": hashed_password,
+        "is_admin": True,
+        "points": 0,
+        "vip_until": datetime.now(),
+    }
+
+    return register_user(user)
 
 
 if __name__ == '__main__':

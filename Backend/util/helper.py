@@ -54,7 +54,6 @@ def decode_token(token):
         if "isAdmin" not in rec:    #POST_PURGE remove
             rec["isAdmin"] = rec["is_admin"]
 
-        clean_obj(rec)
         user_data = dict(user_data, **rec)
     except KeyError:
         logger.error("User ID not found in the token")
@@ -76,11 +75,13 @@ def check_auth(roles=[]):
                 return abort(make_response(jsonify({"message": "Token is missing"}), 403))  
             
             try:
-                decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
-                user_id = decoded_token_obj["user_id"]
-                user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
+                # decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
+                # user_id = decoded_token_obj["user_id"]
+                # user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
-                kwargs["user_id"] = user_id
+                user_data = decode_token(token)
+
+                kwargs["user_id"] = user_data["_id"]
                 kwargs["user"] = user_data["username"]
                 kwargs["is_member"] = user_data["isMember"]
 
@@ -140,11 +141,9 @@ def set_token_vars():
                 return f(*args, **kwargs)
             
             try:
-                decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
-                user_id = decoded_token_obj["user_id"]
-                user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
+                user_data = decode_token(token)
 
-                kwargs["user_id"] = user_id
+                kwargs["user_id"] = user_data["_id"]
                 kwargs["user"] = user_data["username"]
                 kwargs["is_member"] = user_data["isMember"]
             except Exception as e:

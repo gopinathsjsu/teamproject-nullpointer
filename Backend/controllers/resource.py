@@ -241,7 +241,7 @@ def get_user_tickets_admin(check_user_id, *args, **kwargs):
 @resource.route('/api/user_tickets', methods=['GET'])
 @check_auth()
 def get_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(kwargs["user_id"])}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": kwargs["user_id"]}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
     add_showtime_to_tickets(tickets)
@@ -254,7 +254,7 @@ def get_user_tickets(*args, **kwargs):
 @resource.route('/api/prev_user_tickets', methods=['GET'])
 @check_auth()
 def get_prev_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(kwargs["user_id"])}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": kwargs["user_id"]}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
@@ -284,7 +284,7 @@ def get_prev_user_tickets(*args, **kwargs):
 @resource.route('/api/future_user_tickets', methods=['GET'])
 @check_auth()
 def get_future_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(kwargs["user_id"])}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": kwargs["user_id"]}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
@@ -316,7 +316,7 @@ def get_future_user_tickets(*args, **kwargs):
 def delete_ticket(ticket_id, *args, **kwargs):
     #TODO: verify showtime time hasn't passed
 
-    if (cmpe202_db_client.tickets.delete_one({"user_id": ObjectId(kwargs["user_id"]), "_id": ObjectId(ticket_id)}).deleted_count):
+    if (cmpe202_db_client.tickets.delete_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)}).deleted_count):
         #TODO: give refund to user
         return jsonify({"message": "Success"}), 204
     else:
@@ -327,7 +327,7 @@ def delete_ticket(ticket_id, *args, **kwargs):
 @resource.route('/api/recent_movies', methods=['GET'])
 @check_auth()
 def get_recent_movies(*args, **kwargs):
-    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(kwargs["user_id"])}))
+    tickets = list(cmpe202_db_client.tickets.find({"user_id": kwargs["user_id"]}))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
@@ -365,7 +365,7 @@ def buy_vip(*args, **kwargs):
     vip_until = datetime.now() + timedelta(days=365)
     
     cmpe202_db_client.users.update_one(
-        {"_id": ObjectId(kwargs["user_id"])},
+        {"_id": kwargs["user_id"]},
         {"$set": {"vip_until": vip_until}}
         )
     
