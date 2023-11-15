@@ -49,6 +49,9 @@ def decode_token(token):
     try:
         user_id = decoded_token_obj["user_id"]
         rec = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)}, {"password": 0})
+
+        rec["isMember"] = rec["vip_until"] >= datetime.datetime.now()
+
         clean_obj(rec)
         user_data = dict(user_data, **rec)
     except KeyError:
@@ -100,6 +103,8 @@ def clean_obj(obj):
         value = obj[key]
         if isinstance(value, ObjectId):
             obj[key] = str(value)
+        elif isinstance(obj[key], datetime.datetime):
+            obj[key] = obj[key].isoformat()
 
 
 #Cleans the whole list, including changing datetime objects to ISO 8601 strings
