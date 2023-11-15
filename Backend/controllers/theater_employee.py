@@ -118,7 +118,6 @@ def insert_multiplex(*args, **kwargs):
     multiplex_data = {
         "name": data["name"],
         "location_id": ObjectId(data["location_id"]),
-        "location": data["location"],
         "created": datetime.datetime.utcnow(),
         "user": kwargs["user"]
     }
@@ -168,9 +167,7 @@ def insert_theater(*args, **kwargs):
     theater_data = {
         "name": data["name"],
         "multiplex_id": ObjectId(data["multiplex_id"]),
-        "multiplex_name": data["multiplex_name"],
         "location_id": ObjectId(data["location_id"]),
-        "location": data["location"],
         "seating_capacity": data["seating_capacity"],
         "created": datetime.datetime.utcnow(),
         "user": kwargs["user"]
@@ -243,13 +240,7 @@ def insert_showtimes(*args, **kwargs):
         for show_time in show_day_rec["show_times"]: 
             showtime_data = {
                 "theater_id": ObjectId(data["theater_id"]),
-                "theater_name": data["theater_name"],
                 "movie_id": data["movie_id"],
-                "movie_name": data["movie_name"],
-                "multiplex_id": ObjectId(data["multiplex_id"]),
-                "multiplex_name": data["multiplex_name"],
-                "location_id": ObjectId(data["location_id"]),
-                "location": data["location"],
                 "show_date": datetime.datetime.strptime(show_day_timestamp, "%d%b%Y%H%M%S"),
                 "show_day": show_day,
                 "show_time": datetime.datetime.strptime(show_time, "%H:%M:%S"),
