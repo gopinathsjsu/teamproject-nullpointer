@@ -6,7 +6,7 @@ from flask import abort, Blueprint, make_response, request, jsonify
 import config.app_config as app_config
 from util.app_logger import AppLogger
 from util.db_initializer import DBServiceInitializer
-from util.helper import check_auth, clean_obj
+from util.helper import check_auth, clean_obj, clean_list
 
 
 theater_employee = Blueprint('theater_employee', __name__)
@@ -20,9 +20,9 @@ def insert_movie(*args, **kwargs):
     data = request.get_json()
 
     movie_data = {
-        "movie_name": data["movie_name"],
-        "created": datetime.datetime.utcnow(),
-        "user": kwargs["user"]
+        "name": data["movie_name"],
+        "added_date": datetime.datetime.now(),
+        "added_by": kwargs["user"]
     }
     movie_id = cmpe202_db_client.movies.insert_one(movie_data).inserted_id
 
@@ -34,20 +34,16 @@ def insert_movie(*args, **kwargs):
 @theater_employee.route('/api/theater_employee/get_movies', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_movies(*args, **kwargs):
-    response = []
-
-    movies_cursor = cmpe202_db_client.movies.find({
+    movies = list(cmpe202_db_client.movies.find({
         "$or": [
             {"deleted": {"$exists": False}},
             {"deleted": False}
         ]
-    })
+    }))
         
-    for rec in movies_cursor:
-        clean_obj(rec)
-        response.append(rec)
+    clean_list(movies)
 
-    return jsonify(response)
+    return jsonify(movies)
 
 
 @theater_employee.route('/api/theater_employee/delete_movie/<movie_id>', methods=['DELETE'])
