@@ -103,7 +103,7 @@ def clean_obj(obj):
             del obj["_id"]
 
 
-#Cleans the whole list
+#Cleans the whole list, including changing datetime objects to ISO 8601 strings
 def clean_list(obj):
     for k in obj:
         if isinstance(k, (list, dict)):
@@ -112,6 +112,8 @@ def clean_list(obj):
             clean_list(obj[k])
         elif isinstance(obj[k], ObjectId):
             obj[k] = str(obj[k])
+        elif isinstance(obj[k], datetime.datetime):
+            obj[k] = obj[k].isoformat()
 
 
 #To set the token variables without requiring it
