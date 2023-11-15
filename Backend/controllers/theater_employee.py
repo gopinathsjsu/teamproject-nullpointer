@@ -216,6 +216,73 @@ def update_theater_seatings(theater_id, *args, **kwargs):
     return jsonify({"message": "Theater Seating Updation Successfull"})
 
 
+#Adds a new discount
+#Expects in body: "day" (int) (0-6, optional), "start_hour" (int) (0-24, optional), "end_hour" (int) (0-24, optional), 
+# "start_date" (str) (ISO 8601 datetime format, optional), "end_date" (str) (ISO 8601 datetime format, optional)
+#Can do discount by day, time, or combined. No start date means starts immediately, no end date means end in 365 days
+@theater_employee.route('/api/theater_employee/insert_discount', methods=['POST'])
+@check_auth(roles=["Admin"])
+def insert_discount(*args, **kwargs):
+    data = request.get_json()
+
+    discount_data = {
+        "added_date": datetime.datetime.now(),
+        "added_by": kwargs["user"]
+    }
+    if "day" in data:
+        discount_data["day"] = data["day"]
+
+    if "start_hour" in data:
+        discount_data["start_hour"] = data["start_hour"]
+
+    if "end_hour" in data:
+        discount_data["end_hour"] = data["end_hour"]
+
+    if "start_date" in data:
+        discount_data["start_date"] = data["start_date"]
+    else:
+        discount_data["start_date"] = datetime.datetime.now()
+
+    if "end_date" in data:
+        discount_data["end_date"] = data["end_date"]
+    else:
+        discount_data["end_date"] = datetime.datetime.now() + datetime.timedelta(days=365)
+
+    discount_id = cmpe202_db_client.discounts.insert_one(discount_data).inserted_id
+
+    logger.info("New discount Inserted : ID ({0})".format(str(discount_id)))
+
+    return jsonify({"discount_id": str(discount_id)})
+
+
+#Returns all discounts
+@theater_employee.route('/api/theater_employee/get_discounts', methods=['GET'])
+@check_auth(roles=["Admin"])
+def get_discounts(*args, **kwargs):
+    discounts = list(cmpe202_db_client.discounts.find({
+        "$or": [
+            {"deleted": {"$exists": False}},
+            {"deleted": False}
+        ]
+    }))
+        
+    clean_list(discounts)
+    return jsonify(discounts)
+
+
+#Soft deletes a given discount
+@theater_employee.route('/api/theater_employee/delete_discount/<discount_id>', methods=['DELETE'])
+@check_auth(roles=["Admin"])
+def delete_discount(discount_id, *args, **kwargs):
+
+    cmpe202_db_client.discounts.update_one(
+        {'_id': ObjectId(discount_id)}, {"$set": {"deleted": True}})
+    
+    logger.info("discount Deleted : ID ({0})".format(str(discount_id)))
+
+    return jsonify({"message": "discount Deletion Successfull"})
+
+
 @theater_employee.route('/api/theater_employee/insert_showtimes', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_showtimes(*args, **kwargs):
