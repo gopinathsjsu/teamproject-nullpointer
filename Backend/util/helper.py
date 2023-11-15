@@ -119,8 +119,11 @@ def clean_list(obj):
         elif isinstance(obj[k], ObjectId):
             obj[k] = str(obj[k])
         elif isinstance(obj[k], datetime.datetime):
-            obj[k] = obj[k].isoformat()
-        elif isinstance(obj[k], str) and k in ["added_date", "added_by"]:
+            if (k == "added_date"):
+                keys_to_remove.append(k)
+            else:
+                obj[k] = obj[k].isoformat()
+        elif isinstance(obj[k], str) and k == "added_by":
             keys_to_remove.append(k)
     for k in keys_to_remove:
         del obj[k]

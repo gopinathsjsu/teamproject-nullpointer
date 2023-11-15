@@ -14,6 +14,7 @@ logger = AppLogger.getInstance(__name__).getLogger()
 cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collection_instance(app_config.db_name)
 
 
+#Expects in body: movie_name (str)
 @theater_employee.route('/api/theater_employee/insert_movie', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_movie(*args, **kwargs):
@@ -58,15 +59,16 @@ def delete_movie(movie_id, *args, **kwargs):
     return jsonify({"message": "Movie Deletion Successfull"})
 
 
+#Expects in body: location (str)
 @theater_employee.route('/api/theater_employee/insert_location', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_location(*args, **kwargs):
     data = request.get_json()
 
     location_data = {
-        "location": data["location"],
-        "created": datetime.datetime.utcnow(),
-        "user": kwargs["user"]
+        "name": data["location"],
+        "added_date": datetime.datetime.now(),
+        "added_by": kwargs["user"]
     }
     location_id = cmpe202_db_client.locations.insert_one(location_data).inserted_id
 
@@ -78,20 +80,15 @@ def insert_location(*args, **kwargs):
 @theater_employee.route('/api/theater_employee/get_locations', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_locations(*args, **kwargs):
-    response = []
-
-    locations_cursor = cmpe202_db_client.locations.find({
+    locations = list(cmpe202_db_client.locations.find({
         "$or": [
             {"deleted": {"$exists": False}},
             {"deleted": False}
         ]
-    })
-        
-    for rec in locations_cursor:
-        clean_obj(rec)
-        response.append(rec)
+    }))
 
-    return jsonify(response)
+    clean_list(locations)
+    return jsonify(locations)
 
 
 @theater_employee.route('/api/theater_employee/delete_location/<location_id>', methods=['DELETE'])
