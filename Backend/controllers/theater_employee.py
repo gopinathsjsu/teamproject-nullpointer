@@ -14,7 +14,7 @@ logger = AppLogger.getInstance(__name__).getLogger()
 cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collection_instance(app_config.db_name)
 
 
-#Expects in body: movie_name (str)
+#Expects in body: "movie_name" (str)
 @theater_employee.route('/api/theater_employee/insert_movie', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_movie(*args, **kwargs):
@@ -59,7 +59,7 @@ def delete_movie(movie_id, *args, **kwargs):
     return jsonify({"message": "Movie Deletion Successfull"})
 
 
-#Expects in body: location (str)
+#Expects in body: "location" (str)
 @theater_employee.route('/api/theater_employee/insert_location', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_location(*args, **kwargs):
@@ -103,55 +103,56 @@ def delete_location(location_id, *args, **kwargs):
     return jsonify({"message": "Location Deletion Successfull"})
 
 
-@theater_employee.route('/api/theater_employee/insert_multiplex', methods=['POST'])
-@check_auth(roles=["Admin"])
-def insert_multiplex(*args, **kwargs):
-    data = request.get_json()
+# @theater_employee.route('/api/theater_employee/insert_multiplex', methods=['POST'])
+# @check_auth(roles=["Admin"])
+# def insert_multiplex(*args, **kwargs):
+#     data = request.get_json()
 
-    multiplex_data = {
-        "name": data["name"],
-        "location_id": ObjectId(data["location_id"]),
-        "created": datetime.datetime.utcnow(),
-        "user": kwargs["user"]
-    }
-    multiplex_id = cmpe202_db_client.multiplexes.insert_one(multiplex_data).inserted_id
+#     multiplex_data = {
+#         "name": data["name"],
+#         "location_id": ObjectId(data["location_id"]),
+#         "created": datetime.datetime.utcnow(),
+#         "user": kwargs["user"]
+#     }
+#     multiplex_id = cmpe202_db_client.multiplexes.insert_one(multiplex_data).inserted_id
 
-    logger.info("New Multiplex Inserted : ID ({0})".format(str(multiplex_id)))
+#     logger.info("New Multiplex Inserted : ID ({0})".format(str(multiplex_id)))
 
-    return jsonify({"multiplex_id": str(multiplex_id)})
+#     return jsonify({"multiplex_id": str(multiplex_id)})
 
 
-@theater_employee.route('/api/theater_employee/get_multiplexes', methods=['GET'])
-@check_auth(roles=["Admin"])
-def get_multiplexes(*args, **kwargs):
-    response = []
+# @theater_employee.route('/api/theater_employee/get_multiplexes', methods=['GET'])
+# @check_auth(roles=["Admin"])
+# def get_multiplexes(*args, **kwargs):
+#     response = []
 
-    multiplexes_cursor = cmpe202_db_client.multiplexes.find({
-        "$or": [
-            {"deleted": {"$exists": False}},
-            {"deleted": False}
-        ]
-    })
+#     multiplexes_cursor = cmpe202_db_client.multiplexes.find({
+#         "$or": [
+#             {"deleted": {"$exists": False}},
+#             {"deleted": False}
+#         ]
+#     })
         
-    for rec in multiplexes_cursor:
-        clean_obj(rec)
-        response.append(rec)
+#     for rec in multiplexes_cursor:
+#         clean_obj(rec)
+#         response.append(rec)
 
-    return jsonify(response)
+#     return jsonify(response)
 
 
-@theater_employee.route('/api/theater_employee/delete_multiplex/<multiplex_id>', methods=['DELETE'])
-@check_auth(roles=["Admin"])
-def delete_multiplex(multiplex_id, *args, **kwargs):
+# @theater_employee.route('/api/theater_employee/delete_multiplex/<multiplex_id>', methods=['DELETE'])
+# @check_auth(roles=["Admin"])
+# def delete_multiplex(multiplex_id, *args, **kwargs):
 
-    cmpe202_db_client.multiplexes.update_one(
-        {'_id': ObjectId(multiplex_id)}, {"$set": {"deleted": True}})
+#     cmpe202_db_client.multiplexes.update_one(
+#         {'_id': ObjectId(multiplex_id)}, {"$set": {"deleted": True}})
     
-    logger.info("Multiplex Deleted : ID ({0})".format(str(multiplex_id)))
+#     logger.info("Multiplex Deleted : ID ({0})".format(str(multiplex_id)))
 
-    return jsonify({"message": "Multiplex Deletion Successfull"})
+#     return jsonify({"message": "Multiplex Deletion Successfull"})
 
 
+#Expects in body: "name" (str), "location_id" (str), "seating capacity" (int)
 @theater_employee.route('/api/theater_employee/insert_theater', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_theater(*args, **kwargs):
@@ -159,11 +160,10 @@ def insert_theater(*args, **kwargs):
 
     theater_data = {
         "name": data["name"],
-        "multiplex_id": ObjectId(data["multiplex_id"]),
         "location_id": ObjectId(data["location_id"]),
         "seating_capacity": data["seating_capacity"],
-        "created": datetime.datetime.utcnow(),
-        "user": kwargs["user"]
+        "added_date": datetime.datetime.now(),
+        "added_by": kwargs["user"]
     }
     theater_id = cmpe202_db_client.theaters.insert_one(theater_data).inserted_id
 
@@ -175,20 +175,15 @@ def insert_theater(*args, **kwargs):
 @theater_employee.route('/api/theater_employee/get_theaters', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_theaters(*args, **kwargs):
-    response = []
-
-    theaters_cursor = cmpe202_db_client.theaters.find({
+    theaters = list(cmpe202_db_client.theaters.find({
         "$or": [
             {"deleted": {"$exists": False}},
             {"deleted": False}
         ]
-    })
+    }))
         
-    for rec in theaters_cursor:
-        clean_obj(rec)
-        response.append(rec)
-
-    return jsonify(response)
+    clean_list(theaters)
+    return jsonify(theaters)
 
 
 @theater_employee.route('/api/theater_employee/delete_theater/<theater_id>', methods=['DELETE'])
@@ -203,6 +198,7 @@ def delete_theater(theater_id, *args, **kwargs):
     return jsonify({"message": "Theater Deletion Successfull"})
 
 
+#Expects in body: "seating_capacity" (int)
 @theater_employee.route('/api/theater_employee/update_theater_seatings/<theater_id>', methods=['PUT'])
 @check_auth(roles=["Admin"])
 def update_theater_seatings(theater_id, *args, **kwargs):
