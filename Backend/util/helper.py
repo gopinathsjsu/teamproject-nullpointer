@@ -74,13 +74,15 @@ def check_auth(roles=[]):
                 user_id = decoded_token_obj["user_id"]
                 user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
+                is_member = True if user_data["vip_until"] >= datetime.datetime.now() else False
+
                 kwargs["user_id"] = user_id
                 kwargs["user"] = user_data["username"]
-                kwargs["is_member"] = user_data["isMember"]
+                kwargs["is_member"] = is_member
 
                 if "Admin" in roles and "isAdmin" in user_data and user_data["isAdmin"]:
                     authorized_cond = True
-                if "Member" in roles and "isMember" in user_data and user_data["isMember"]:
+                if "Member" in roles and is_member:
                     authorized_cond = True
 
             except KeyError:
@@ -131,9 +133,11 @@ def set_token_vars():
                 user_id = decoded_token_obj["user_id"]
                 user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
+                is_member = True if user_data["vip_until"] >= datetime.datetime.now() else False
+
                 kwargs["user_id"] = user_id
                 kwargs["user"] = user_data["username"]
-                kwargs["is_member"] = user_data["isMember"]
+                kwargs["is_member"] = is_member
             except Exception as e:
                 logger.error(f"Token is invalid")
                 return abort(make_response(jsonify({"message": "Token is invalid"}), 401))

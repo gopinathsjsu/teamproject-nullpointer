@@ -76,6 +76,12 @@ def add_showtime_to_tickets(tickets):
         ticket["showtime"] = cmpe202_db_client.showtimes.find_one({"_id": ticket["showtime_id"]})
 
 
+#Adds showtime["movie"] to each showtime
+def add_movie_to_showtimes(showtimes):
+    for show in showtimes:
+        show["movie"] = cmpe202_db_client.movies.find_one({"_id": show["movie_id"]})
+
+
 #Returns the number of remaining seats in showtime, expects ObjectId
 def get_remaining_seats(showtime_id):
     try:
@@ -328,9 +334,31 @@ def get_recent_movies(*args, **kwargs):
     
     if not showtimes:
         return jsonify({"message": "No movies watched within the past 30 days"}), 404
-    
-    for show in showtimes:
-        show["movie"] = cmpe202_db_client.movies.find_one({"_id": show["movie_id"]})
+    add_movie_to_showtimes(showtimes)
 
     clean_list(showtimes)
     return jsonify(showtimes), 200
+
+
+#Makes the current user a VIP member for 365 days from now (we get slightly more money for value on leap years!)
+#If already VIP, simply overwrites the end date and the remaining time is wasted.
+@resource.route('/api/buy_vip', methods=['PATCH'])
+@check_auth()
+def buy_vip(*args, **kwargs):
+    #Pretending to have payment stuff
+    paid = True
+    if (not paid):
+        return jsonify({"message": "Too poor"}), 403
+    
+    vip_until = datetime.now() + timedelta(days=365)
+    
+    cmpe202_db_client.users.update_one(
+        {"_id": ObjectId(kwargs["user_id"])},
+        {"$set": {"vip_until": vip_until}}
+        )
+    
+    ret = {
+        "vip_until": vip_until.isoformat()
+    }
+
+    return jsonify(ret), 200
