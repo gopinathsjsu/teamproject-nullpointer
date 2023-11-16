@@ -1,9 +1,12 @@
 import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import classNames from 'classnames';
+
 import Select from '../Select/Select';
 import Avatar from '../../assets/avatar.png';
 import Logo from '../../assets/logo.png';
+import Caret from '../../assets/caret.svg';
 import './Navbar.scss';
-import { useEffect, useState } from 'react';
 
 const Navbar = () => {
   const { user, dashboard } = useSelector((state) => state);
@@ -11,6 +14,7 @@ const Navbar = () => {
   const [ theaters, setTheatres] = useState([]);
   const [ selectedLocation, setSelectedLocation ] = useState(locations?.[0] || {});
   const [ selectedTheater, setSelectedTheater ] = useState(theaters?.[0] || {});
+  const [ dropdownCicked, setDropdownClicked ] = useState(false);
 
   useEffect(() => {
     if(dashboard?.locations){ 
@@ -33,26 +37,37 @@ const Navbar = () => {
     setTheatres(dashboard?.theaters?.filter((theater) => theater?.locationId === selectedLocation?.id));
   },[selectedLocation]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('x-access-token');
+    window.location.href = '/';
+  };
+
   return(
     <div className="navbar-container">
       <div className='left-content'>
         <a href="/" className="link avatar">
           <img src={Logo} alt="avatar" width={80} height={40}/>
         </a>
-        <Select 
-          label={"Location"}
-          name={"Locations"} 
-          value={selectedLocation?.name}
-          options={locations?.map(({name}) => name)} 
-          onChange={handleSetLocation}
-        />
-        <Select 
-          label={"Theatres"}
-          name={"Theatres"} 
-          value={selectedTheater?.name}
-          options={theaters?.map(({name}) => name)} 
-          onChange={handleSetTheater}
-        />
+        {
+          window.location.pathname === '/' &&(
+            <>
+            <Select 
+              label={"Location"}
+              name={"Locations"} 
+              value={selectedLocation?.name}
+              options={locations?.map(({name}) => name)} 
+              onChange={handleSetLocation}
+            />
+            <Select 
+              label={"Theatres"}
+              name={"Theatres"} 
+              value={selectedTheater?.name}
+              options={theaters?.map(({name}) => name)} 
+              onChange={handleSetTheater}
+            />
+            </>
+          )
+        }
         {
           user?.id && !user?.isMember && (
           <a href="/payment" className="link">
@@ -68,10 +83,21 @@ const Navbar = () => {
               Login/Register
             </a>
           :
-            <a href="/account" className="link avatar">
-              <span>Welcome {user?.username}</span>
-              <img src={Avatar} alt="avatar" width={40} height={40}/>
-            </a>
+          <div class='avatar' role="button" onClick={() => setDropdownClicked(!dropdownCicked)}>
+            <img src={Avatar} alt="avatar" width={40} height={40}/>
+            <img src={Caret} width={20} height={20} class={classNames({
+              'rotateDown': dropdownCicked,
+              'rotateUp': !dropdownCicked
+            })} alt="caret"/>
+            {
+              dropdownCicked && (
+                <div className='avatar-dropdown'>
+                  <a href="/account" className="link">Account</a>
+                  <a href='#' className='link' onClick={handleLogout}>Logout</a>
+                </div>
+              )
+            }
+          </div>
         }
        
       </div>
