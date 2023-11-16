@@ -18,14 +18,20 @@ cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collectio
 #TODO: Fix delete routes to cascade, so deleting a movie refunds all tickets for that movie and so on
 
 
-#Expects in body: "movie_name" (str)
+#Expects in body: "image" (str), "title" (str) or "movie_name" (str)
 @theater_employee.route('/api/theater_employee/insert_movie', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_movie(*args, **kwargs):
     data = request.get_json()
 
+    if "movie_name" in data:
+        name = data["movie_name"]
+    elif "title" in data:
+        name = data["title"]
+
     movie_data = {
-        "name": data["movie_name"],
+        "title": name,
+        "image": data["image"],
         "added_date": datetime.datetime.now(),
         "added_by": kwargs["user"]
     }
