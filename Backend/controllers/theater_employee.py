@@ -57,7 +57,7 @@ def get_movies(*args, **kwargs):
     return jsonify(movies)
 
 
-#Expects in body: "title" (int) (opt), "image" (str) (opt)
+#Expects in body: "title" (str) (opt), "image" (str) (opt)
 #Can do either or both together
 @theater_employee.route('/api/theater_employee/update_movie/<movie_id>', methods=['PATCH'])
 @check_auth(roles=["Admin"])
@@ -127,6 +127,25 @@ def get_locations(*args, **kwargs):
 
     clean_list(locations)
     return jsonify(locations)
+
+
+#Expects in body: "name" (str)
+@theater_employee.route('/api/theater_employee/update_location/<location_id>', methods=['PATCH'])
+@check_auth(roles=["Admin"])
+def update_location(location_id, *args, **kwargs):
+    data = request.get_json()
+
+    if "name" in data:
+        cmpe202_db_client.locations.update_one(
+            {"_id": ObjectId(location_id)},
+            {"$set": {
+                "name": data["name"]
+            }}
+        )
+
+    logger.info("location : ID ({0})".format(location_id))
+
+    return jsonify({"message": "location Update Successfull"})
 
 
 @theater_employee.route('/api/theater_employee/delete_location/<location_id>', methods=['DELETE'])
