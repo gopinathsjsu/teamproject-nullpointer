@@ -205,7 +205,7 @@ def get_all_locations():
 
 
 #Buys a number of tickets for a given showtime
-#Body expected: showtime_id (string), ticket_count (int), pay_reward (boolean) (opt)
+#Body expected: showtime_id (string), ticket_count (int), use_reward (boolean) (opt)
 @resource.route('/api/buy_ticket', methods=['POST'])
 @set_token_vars()
 def buy_tickets(*args, **kwargs):
@@ -244,12 +244,23 @@ def buy_tickets(*args, **kwargs):
         ticket["user_id"] = user_id
         if kwargs["is_member"]:
             ticket["paid"] -= fee
-        cmpe202_db_client.users.update_one(
-            {"_id": user_id},
-            {"$set": {
-                "points": kwargs["points"] + ticket["paid"]
-            }
-        })
+        if "use_reward" in val and val["use_reward"]:
+            if kwargs["points"] < ticket["paid"]:
+                return jsonify({"message": "Not enough points, can't afford", "price": ticket["paid"]}), 409
+            
+            cmpe202_db_client.users.update_one(
+                {"_id": user_id},
+                {"$set": {
+                    "points": kwargs["points"] - ticket["paid"]
+                }
+            })
+        else:
+            cmpe202_db_client.users.update_one(
+                {"_id": user_id},
+                {"$set": {
+                    "points": kwargs["points"] + ticket["paid"]
+                }
+            })
 
     cmpe202_db_client.tickets.insert_one(ticket)
 
