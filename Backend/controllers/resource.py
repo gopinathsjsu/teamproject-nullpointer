@@ -389,3 +389,23 @@ def get_movie_showtimes(movie_id):
 
     clean_list(showtimes)
     return jsonify(showtimes), 200
+
+
+#Returns upcoming movies (no showtime or > 1 month out)
+@resource.route('/api/upcoming_movies', methods=['GET'])
+def get_upcoming_movies():
+    movies = list(cmpe202_db_client.movies.find({}))
+    upcoming = []
+    future = datetime.now() + timedelta(days=30)
+    for movie in movies:
+        showtime = cmpe202_db_client.showtimes.find_one({
+            "movie_id": movie["_id"],
+            "show_date": {
+                "$lte": future
+            }
+        })
+        if not showtime:
+            upcoming.append(movie)
+
+    clean_list(upcoming)
+    return jsonify(upcoming), 200
