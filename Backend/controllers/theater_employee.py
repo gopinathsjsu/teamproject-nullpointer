@@ -57,6 +57,34 @@ def get_movies(*args, **kwargs):
     return jsonify(movies)
 
 
+#Expects in body: "title" (int) (opt), "image" (str) (opt)
+#Can do either or both together
+@theater_employee.route('/api/theater_employee/update_movie/<movie_id>', methods=['PATCH'])
+@check_auth(roles=["Admin"])
+def update_movie(movie_id, *args, **kwargs):
+    data = request.get_json()
+
+    if "title" in data:
+        cmpe202_db_client.movies.update_one(
+            {"_id": ObjectId(movie_id)},
+            {"$set": {
+                "title": data["title"]
+            }}
+        )
+
+    if "image" in data:
+        cmpe202_db_client.movies.update_one(
+            {"_id": ObjectId(movie_id)},
+            {"$set": {
+                "image": data["image"]
+            }}
+        )
+
+    logger.info("Movie : ID ({0})".format(movie_id))
+
+    return jsonify({"message": "Movie Update Successfull"})
+
+
 @theater_employee.route('/api/theater_employee/delete_movie/<movie_id>', methods=['DELETE'])
 @check_auth(roles=["Admin"])
 def delete_movie(movie_id, *args, **kwargs):
