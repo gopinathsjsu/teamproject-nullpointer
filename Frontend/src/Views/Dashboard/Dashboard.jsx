@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from "react";
+import { setDashboard } from "../../Redux/dashboardReducer";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Dashboard = () => {
     fetch(`${host}/api/all_locations`)
     .then((resp) => resp.json())
     .then((data) => {
-      console.warn('111', data);
+      dispatch(setDashboard(data));
     })
   };
 
@@ -25,20 +26,40 @@ const Dashboard = () => {
     getData();
   }, [])
 
-  const movies = [
-    {
+  const movies = {
+    currentlyShowing: [{
+      id:'1',
       title: 'Oppenheimer',
       image: Oppenheimer,
     },
     {
+      id:'2',
       title: 'Spiderman',
       image: Spiderman,
     },
     {
+      id:'3',
       title: 'Elemental',
       image: Elemental,
     }
-  ]
+    ],
+    upcomingMovies: [{
+      id:'1',
+      title: 'Oppenheimer',
+      image: Oppenheimer,
+    },
+    {
+      id:'2',
+      title: 'Spiderman',
+      image: Spiderman,
+    },
+    {
+      id:'3',
+      title: 'Elemental',
+      image: Elemental,
+    }]
+  };
+    
 
   const handleBook = () => {
     navigate("/checkout");
@@ -51,7 +72,7 @@ const Dashboard = () => {
           Currently Playing
         </h1>
         <div className="showing-grid">
-          {movies.map(movie => (
+          {movies.currentlyShowing.map(movie => (
             <div className="movie">
               <img className="movie-image" src={movie.image} alt=''/>
               <h3 className="movie-title">
@@ -67,7 +88,7 @@ const Dashboard = () => {
           Upcoming Movies
         </h1>
         <div className="showing-grid">
-          {movies.map(movie => (
+          {movies.upcomingMovies.map(movie => (
             <div className="movie">
               <img className="movie-image" src={movie.image} alt=''/>
               <h3 className="movie-title">

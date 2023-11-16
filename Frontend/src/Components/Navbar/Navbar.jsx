@@ -3,12 +3,36 @@ import Select from '../Select/Select';
 import Avatar from '../../assets/avatar.png';
 import Logo from '../../assets/logo.png';
 import './Navbar.scss';
+import { useEffect, useState } from 'react';
 
 const Navbar = () => {
-  const locations = ['Milpitas', 'San Jose', 'Santa Clara', 'Santa Cruz'];
-  const theatres = ['AMC screen 1', 'AMC screen 2', 'AMC screen 3', 'AMC screen 4'];
-  const { user } = useSelector((state) => state);
+  const { user, dashboard } = useSelector((state) => state);
+  const [ locations, setLocations] = useState([]);
+  const [ theaters, setTheatres] = useState([]);
+  const [ selectedLocation, setSelectedLocation ] = useState(locations?.[0] || {});
+  const [ selectedTheater, setSelectedTheater ] = useState(theaters?.[0] || {});
+
+  useEffect(() => {
+    if(dashboard?.locations){ 
+      setLocations(dashboard?.locations);
+      setTheatres(dashboard?.theaters);
+    }
+  },[dashboard]);
+
+  const handleSetLocation = (e) =>{
+    const location = locations?.filter(({name}) => name === e?.target?.value)?.[0];
+    setSelectedLocation(location);
+  }
+
+  const handleSetTheater = (e) =>{
+    const theater = theaters?.filter(({name}) => name === e?.target?.value)?.[0];
+    setSelectedTheater(theater);
+  }
   
+  useEffect(() => {
+    setTheatres(dashboard?.theaters?.filter((theater) => theater?.locationId === selectedLocation?.id));
+  },[selectedLocation]);
+
   return(
     <div className="navbar-container">
       <div className='left-content'>
@@ -18,16 +42,24 @@ const Navbar = () => {
         <Select 
           label={"Location"}
           name={"Locations"} 
-          options={locations} 
+          value={selectedLocation?.name}
+          options={locations?.map(({name}) => name)} 
+          onChange={handleSetLocation}
         />
         <Select 
           label={"Theatres"}
           name={"Theatres"} 
-          options={theatres} 
+          value={selectedTheater?.name}
+          options={theaters?.map(({name}) => name)} 
+          onChange={handleSetTheater}
         />
-        <a href="/payment" className="link">
-          Buy Membership
-        </a>
+        {
+          user?.id && !user?.isMember && (
+          <a href="/payment" className="link">
+            Buy Membership
+          </a>
+          )
+        }
       </div>
       <div className='right-content'>
         {

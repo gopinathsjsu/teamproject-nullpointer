@@ -7,7 +7,7 @@ const Select = ({label, name, options, onChange}) =>{
     <label>{label}</label>
       <select name={name} id={name} onChange={onChange}>
         {
-          options.map(option => (
+          options?.map(option => (
           <option value={option}>
             {option}
           </option>))

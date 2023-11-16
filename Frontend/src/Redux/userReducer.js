@@ -5,7 +5,12 @@ export const user = createSlice({
   initialState: {},
   reducers: {
     login: (_, action) =>{
-      return action.payload
+      const user = {
+        ...action.payload,
+        id: action.payload._id,
+      }
+      delete user._id;
+      return user;
     }
   },
 })
