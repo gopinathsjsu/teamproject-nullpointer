@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 
 
 const AccountInfo = () => {
-    //const userInfo = useSelector(state => state);
+    const userInfo = useSelector(state => state.user);
     const [accountInfo, setAccountInfo] = useState('');
 
     const [movies, setMovies] = useState([]);
@@ -32,11 +32,15 @@ const AccountInfo = () => {
                     theaterID: entry.theater_id,
                 }));
                 setMovies(formattedMovies);
-                setIsLoading(false);
-            } ,[]
-        )}
+            }, []
+        ).catch((error) => {
+            console.log(error);
+            //setError(JSON.stringify(error));
+            setError("No tickets found");
+        });}
 
         fetchData();
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -46,6 +50,9 @@ const AccountInfo = () => {
     function displayMovies() {
         if(isLoading) {
             return <div> Loading...</div>;
+        }
+        else if(error) {
+            return <div> {error} </div>
         }
         else {
             return <div>
@@ -72,11 +79,11 @@ const AccountInfo = () => {
     return (
         <div className="page-layout">
             <h1 className="title">Account Information</h1>
-            <p1> Username: {accountInfo.username}</p1>
+            <p1> Username: {userInfo.username}</p1>
             <br></br>
-            <p1> Membership: {accountInfo.membership}</p1>
+            <p1> Membership: {userInfo.isMember ? "True" : "False"}</p1>
             <br></br>
-            <p1> Rewards Points: {accountInfo.points}</p1>
+            <p1> Rewards Points: {userInfo.points}</p1>
             <br></br>
 
             <div className="movie-row">
