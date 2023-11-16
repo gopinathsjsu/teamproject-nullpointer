@@ -227,7 +227,7 @@ def update_theater_seatings(theater_id, *args, **kwargs):
 
 
 #Adds a new discount
-#Expects in body: "day" (int) (0-6, optional), "start_hour" (int) (0-24, optional), "end_hour" (int) (0-24, optional), 
+#Expects in body: "percentage" (int) (0-100), "day" (int) (0-6, optional), "start_hour" (int) (0-24, optional), "end_hour" (int) (0-24, optional), 
 # "start_date" (str) (ISO 8601 datetime format, optional), "end_date" (str) (ISO 8601 datetime format, optional)
 #Can do discount by day, time, or combined. No start date means starts immediately, no end date means end in 365 days
 @theater_employee.route('/api/theater_employee/insert_discount', methods=['POST'])
@@ -236,6 +236,7 @@ def insert_discount(*args, **kwargs):
     data = request.get_json()
 
     discount_data = {
+        "percentage": data["percentage"],
         "added_date": datetime.datetime.now(),
         "added_by": kwargs["user"]
     }

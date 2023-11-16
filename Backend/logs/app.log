@@ -293,3 +293,4 @@
 2023-11-15 19:31:17,385	[ERROR]	Token is invalid cannot be decoded 
 2023-11-15 22:43:38,294	[INFO]	New Movie Inserted : ID (6555ba1ae610a5eedca2c2e2) 
 2023-11-15 22:51:25,338	[INFO]	New Showtime Inserted : ID (6555bbede3628362edae9743) 
+2023-11-15 23:35:06,376	[INFO]	New discount Inserted : ID (6555c62a363f428e9e4c3047) 

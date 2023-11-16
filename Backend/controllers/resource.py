@@ -103,6 +103,17 @@ def get_remaining_seats(showtime_id):
     return theater_seats - used_seats
 
 
+#Calculates the price of a showtime based on active discounts
+# def get_active_price(showtime_id):
+#     try:
+#         show_date = cmpe202_db_client.showtimes.find_one({"_id": showtime_id})["show_date"]
+#     except(Exception):
+#         return jsonify({"message": "Bad showtime ID"}), 400
+    
+
+
+
+
 # @resource.route('/api/testadd', methods=['GET'])
 # def get_ddshowtimes():
 #     showtime = {
@@ -138,13 +149,13 @@ def get_remaining_seats(showtime_id):
 #TODO: remove once db is set
 @resource.route('/api/cleandb', methods=['DELETE'])
 def get_showtsdfsdfimes():
-    cmpe202_db_client.users.delete_many({})
-    cmpe202_db_client.movies.delete_many({})
-    cmpe202_db_client.locations.delete_many({})
-    cmpe202_db_client.theaters.delete_many({})
+    #cmpe202_db_client.users.delete_many({})
+    #cmpe202_db_client.movies.delete_many({})
+    #cmpe202_db_client.locations.delete_many({})
+    #cmpe202_db_client.theaters.delete_many({})
     cmpe202_db_client.discounts.delete_many({})
-    cmpe202_db_client.showtimes.delete_many({})
-    cmpe202_db_client.tickets.delete_many({})
+    #cmpe202_db_client.showtimes.delete_many({})
+    #cmpe202_db_client.tickets.delete_many({})
 
     return jsonify(""), 200
 
@@ -180,7 +191,7 @@ def get_all_locations():
 
 
 #Buys a number of tickets for a given showtime
-#Body expected: showtime_id (string), ticket_count (int)
+#Body expected: showtime_id (string), ticket_count (int), pay_reward (boolean) (opt)
 @resource.route('/api/buy_ticket', methods=['POST'])
 @set_token_vars()
 def buy_tickets(*args, **kwargs):
@@ -193,7 +204,7 @@ def buy_tickets(*args, **kwargs):
         else:
             ticket_count = 1
     else:
-        user_id = "0"
+        user_id = None
         ticket_count = 1
 
     if ("showtime_id" in val):
@@ -207,7 +218,10 @@ def buy_tickets(*args, **kwargs):
     if get_remaining_seats(ObjectId(showtime_id)) - ticket_count < 0:
         return jsonify({"message": "Can't book more tickets than available seats"}), 409
     
-    #TODO: charge user for movie
+    #Not doing real payment, so only reward points matters
+    #if user_id:
+
+
     paid = True
     if (not paid):
         return jsonify({"message": "Too poor"}), 403
