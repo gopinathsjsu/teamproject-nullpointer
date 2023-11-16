@@ -211,7 +211,7 @@ def get_all_locations():
 def buy_tickets(*args, **kwargs):
     val = request.get_json()
 
-    if "user" in kwargs:
+    if "user_id" in kwargs:
         user_id = kwargs["user_id"]
         if ("ticket_count" in val):
             ticket_count = val["ticket_count"]
@@ -241,7 +241,7 @@ def buy_tickets(*args, **kwargs):
     }
 
     if user_id:
-        ticket["user_id"]: user_id
+        ticket["user_id"] = user_id
         if kwargs["is_member"]:
             ticket["paid"] -= fee
         cmpe202_db_client.users.update_one(
@@ -347,13 +347,28 @@ def get_future_user_tickets(*args, **kwargs):
 @resource.route('/api/user_ticket/<ticket_id>', methods=['DELETE'])
 @check_auth()
 def delete_ticket(ticket_id, *args, **kwargs):
-    #TODO: verify showtime time hasn't passed
+    ticket = cmpe202_db_client.tickets.find_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)})
+    if not ticket:
+        return jsonify({"message": "Requested ticket not found or doesn't belong to user"}), 404
+    
+    showtime = cmpe202_db_client.showtimes.find_one({"_id": ticket["showtime_id"]})
+    if not showtime:
+        return jsonify({"message": "Requested ticket is invalid, no linked showtime"}), 404
+    
+    if showtime["show_date"] < datetime.now():
+        return jsonify({"message": "Can't refund tickets for showings that have already begun"}), 409
 
     if (cmpe202_db_client.tickets.delete_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)}).deleted_count):
-        #TODO: give refund to user
+        cmpe202_db_client.users.update_one(
+            {"_id": kwargs["user_id"]},
+            {"$set": {
+                "points": kwargs["points"] - ticket["paid"]
+            }
+        })
+
         return jsonify({"message": "Success"}), 204
     else:
-        return jsonify({"message": "Requested ticket not found or doesn't belong to user"}), 400
+        return jsonify({"message": "Something broke, ticket was found but deletion failed"}), 500
 
 
 #Returns all showtimes for user within past 30 days, including movie data
