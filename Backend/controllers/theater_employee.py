@@ -243,6 +243,33 @@ def get_theaters(*args, **kwargs):
     return jsonify(theaters)
 
 
+#Expects in body: "name" (str) (opt) or "seating_capacity" (int) (opt)
+@theater_employee.route('/api/theater_employee/update_theater/<theater_id>', methods=['PATCH'])
+@check_auth(roles=["Admin"])
+def update_theater(theater_id, *args, **kwargs):
+    data = request.get_json()
+
+    if "name" in data:
+        cmpe202_db_client.theaters.update_one(
+            {"_id": ObjectId(theater_id)},
+            {"$set": {
+                "name": data["name"]
+            }}
+        )
+
+    if "seating_capacity" in data:
+        cmpe202_db_client.theaters.update_one(
+            {"_id": ObjectId(theater_id)},
+            {"$set": {
+                "seating_capacity": data["seating_capacity"]
+            }}
+        )
+
+    logger.info("theater : ID ({0})".format(theater_id))
+
+    return jsonify({"message": "theater Update Successfull"})
+
+
 @theater_employee.route('/api/theater_employee/delete_theater/<theater_id>', methods=['DELETE'])
 @check_auth(roles=["Admin"])
 def delete_theater(theater_id, *args, **kwargs):
