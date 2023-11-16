@@ -42,7 +42,7 @@ const router = (user) => createBrowserRouter([
   },
   {
     path: '/admin',
-    element: user?.isAdmin? <Admin /> : <Navigate to="/" />,
+    element: user?.is_admin? <Admin /> : <Navigate to="/" />,
   }
 ]);
 
