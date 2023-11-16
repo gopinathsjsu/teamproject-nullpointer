@@ -124,7 +124,8 @@ def decode_access_token():
         return jsonify({"user_data": user_data})
     except Exception as e:
         logger.error(f"Token is invalid cannot be decoded")
-    return jsonify({"message": "Token is invalid cannot be decoded"})
+    
+    return abort(make_response(jsonify(error=f"Token is invalid cannot be decoded"), 401))
 
 
 #TODO: remove once db is stable
