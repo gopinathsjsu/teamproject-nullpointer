@@ -84,6 +84,7 @@ def check_auth(roles=[]):
                 kwargs["user_id"] = user_data["_id"]
                 kwargs["user"] = user_data["username"]
                 kwargs["is_member"] = user_data["isMember"]
+                kwargs["points"] = user_data["points"]
 
                 if "Admin" in roles and "isAdmin" in user_data and user_data["isAdmin"]:
                     authorized_cond = True
@@ -146,6 +147,7 @@ def set_token_vars():
                 kwargs["user_id"] = user_data["_id"]
                 kwargs["user"] = user_data["username"]
                 kwargs["is_member"] = user_data["isMember"]
+                kwargs["points"] = user_data["points"]
             except Exception as e:
                 logger.error(f"Token is invalid")
                 return abort(make_response(jsonify({"message": "Token is invalid"}), 401))

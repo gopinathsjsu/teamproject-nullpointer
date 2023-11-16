@@ -91,7 +91,7 @@ def get_remaining_seats(showtime_id):
 
     theater_seats = cmpe202_db_client.theaters.find_one({"_id": theater_id})["seating_capacity"]
 
-    #OPTIMIZE
+    #Probably a better way to get just the sum value out of this
     tmp = list(cmpe202_db_client.tickets.aggregate([{
         "$match": {"showtime_id": showtime_id}},
         {"$group": {
@@ -104,47 +104,61 @@ def get_remaining_seats(showtime_id):
 
 
 #Calculates the price of a showtime based on active discounts
-# def get_active_price(showtime_id):
-#     try:
-#         show_date = cmpe202_db_client.showtimes.find_one({"_id": showtime_id})["show_date"]
-#     except(Exception):
-#         return jsonify({"message": "Bad showtime ID"}), 400
+def get_active_price(showtime_id):
+    try:
+        show_date = cmpe202_db_client.showtimes.find_one({"_id": showtime_id})["show_date"]
+    except(Exception):
+        return jsonify({"message": "Bad showtime ID"}), 400
     
+    #Probably a better way to get just the sum value out of this
+    tmp = list(cmpe202_db_client.discounts.aggregate([{
+        "$match": {
+            "$and": [
+                {"$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+                ]},
+                {"start_date": {
+                    "$lte": show_date
+                }},
+                {"end_date": {
+                    "$gte": show_date
+                }},
+                {"$or": [
+                    {"day": {"$exists": False}},
+                    {"day": show_date.weekday()}
+                ]},
+                {"$or": [
+                    {"start_hour": {"$exists": False}},
+                    {"start_hour": {
+                        "$lte": show_date.time().hour}
+                    }
+                ]},
+                {"$or": [
+                    {"end_hour": {"$exists": False}},
+                    {"end_hour": {
+                        "$gte": show_date.time().hour}
+                    }
+                ]}
+            ]
+        }},
+        {"$group": {
+            "_id": "null",
+            "sum": {"$sum": "$percentage"}
+        }}]))
+    discount = tmp[0]["sum"] if tmp else 0
+    if discount > 100:
+        discount = 100
+
+    price = 20.0
+
+    return price - (price * discount / 100) if discount else price
 
 
 
-
-# @resource.route('/api/testadd', methods=['GET'])
-# def get_ddshowtimes():
-#     showtime = {
-#         "movie_id": ObjectId("654b100e843cc2a163b985fc"),
-#         "theater_id": ObjectId("65531f0438e5bb69d4e31b0d"),
-#         "show_date": datetime(2023, 11, 10)
-#     }
-#     cmpe202_db_client.showtimes.insert_one(showtime)
-
-#     showtime2 = {
-#         "movie_id": ObjectId("654b107a843cc2a163b98605"),
-#         "theater_id": ObjectId("65531f0438e5bb69d4e31b0d"),
-#         "show_date": datetime(2023, 11, 10)
-#     }
-#     cmpe202_db_client.showtimes.insert_one(showtime2)
-
-#     showtime3 = {
-#         "movie_id": ObjectId("654b107a843cc2a163b98605"),
-#         "theater_id": ObjectId("65531f0438e5bb69d4e31b0d"),
-#         "show_date": datetime(2023, 11, 11)
-#     }
-#     cmpe202_db_client.showtimes.insert_one(showtime3)
-
-#     showtime4 = {
-#         "movie_id": ObjectId("654b107a843cc2a163b98605"),
-#         "theater_id": ObjectId("65531f0438e5bb69d4e31b0d"),
-#         "show_date": datetime(2023, 11, 18)
-#     }
-#     cmpe202_db_client.showtimes.insert_one(showtime4)
-
-#     return jsonify({"message": "", 200
+@resource.route('/api/testadd', methods=['GET'])
+def get_ddshowtimes():
+    return jsonify({"message": get_active_price(ObjectId("6555ccc14a63291ca6a10162"))}), 200
 
 #TODO: remove once db is set
 @resource.route('/api/cleandb', methods=['DELETE'])
@@ -218,20 +232,25 @@ def buy_tickets(*args, **kwargs):
     if get_remaining_seats(ObjectId(showtime_id)) - ticket_count < 0:
         return jsonify({"message": "Can't book more tickets than available seats"}), 409
     
-    #Not doing real payment, so only reward points matters
-    #if user_id:
 
-
-    paid = True
-    if (not paid):
-        return jsonify({"message": "Too poor"}), 403
-
+    fee = 1.5
     ticket = {
-        "user_id": ObjectId(user_id),
         "showtime_id": ObjectId(showtime_id),
         "ticket_count": ticket_count,
-        "paid": 10.5
+        "paid": (get_active_price(ObjectId(showtime_id)) * ticket_count) + fee
     }
+
+    if user_id:
+        ticket["user_id"]: user_id
+        if kwargs["is_member"]:
+            ticket["paid"] -= fee
+        cmpe202_db_client.users.update_one(
+            {"_id": user_id},
+            {"$set": {
+                "points": kwargs["points"] + ticket["paid"]
+            }
+        })
+
     cmpe202_db_client.tickets.insert_one(ticket)
 
     clean_obj(ticket)
