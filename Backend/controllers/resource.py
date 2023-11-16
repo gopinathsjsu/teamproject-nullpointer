@@ -375,3 +375,14 @@ def buy_vip(*args, **kwargs):
     }
 
     return jsonify(ret), 200
+
+
+#Returns the showtimes for a given movie
+@resource.route('/api/movie/<movie_id>', methods=['GET'])
+def get_movie_showtimes(movie_id):
+    showtimes = list(cmpe202_db_client.showtimes.find({"movie_id": ObjectId(movie_id)}))
+    if not showtimes:
+        return jsonify({"message": "No showtimes for movie found"}), 404
+
+    clean_list(showtimes)
+    return jsonify(showtimes), 200
