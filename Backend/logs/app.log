@@ -290,3 +290,4 @@
 2023-11-15 19:13:30,818	[INFO]	New Showtime Inserted : ID (655588dabae3d21d6abd5ba0) 
 2023-11-15 19:13:31,059	[INFO]	New Showtime Inserted : ID (655588dabae3d21d6abd5ba1) 
 2023-11-15 19:13:31,283	[INFO]	New discount Inserted : ID (655588dbbae3d21d6abd5ba2) 
+2023-11-15 19:31:17,385	[ERROR]	Token is invalid cannot be decoded 

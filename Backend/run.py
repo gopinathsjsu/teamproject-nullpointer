@@ -47,11 +47,14 @@ def get_access_key():
     
     user_record = fetch_user_details(username)
 
-    if hasher.check_password_hash(user_record["password"], password):
-        access_token = generate_token(user_record)
-        clean_obj(user_record)
-        del user_record["password"]
-        return jsonify({"access_token": access_token, "user_data": user_record})
+    try:
+        if hasher.check_password_hash(user_record["password"], password):
+            access_token = generate_token(user_record)
+            clean_obj(user_record)
+            del user_record["password"]
+            return jsonify({"access_token": access_token, "user_data": user_record})
+    except Exception as e:
+        return abort(make_response(jsonify(error=f"Incorrect Username or Password."), 400))
 
     # if verify_user_cred(username, password, user_record):
     #     access_token = generate_token(user_record)
