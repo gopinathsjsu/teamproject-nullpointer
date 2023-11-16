@@ -174,7 +174,6 @@ def get_all_locations():
     locations = list(cmpe202_db_client.locations.find({}))
     for location in locations:
         location["theaters"] = list(cmpe202_db_client.theaters.find({"location_id": location["_id"]}))
-        add_showtimes_to_theaters(location["theaters"])
 
     clean_list(locations)
     return jsonify(locations), 200
