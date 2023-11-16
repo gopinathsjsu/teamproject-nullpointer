@@ -24,15 +24,75 @@ a{
       display: flex;
       justify-content: flex-end;
       align-items: flex-start;
+      position: relative;
       min-height: 36px;
       .avatar{
         width: 25%;
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
         img{
           border-radius: 12px;
+        }
+        span{
+          font-size: 30px;
+          margin-left: 2px;
+        }
+        .rotateUp {
+          transform: rotate(0deg);
+          animation-name: rotateUp;
+          animation-duration: 0.1s;
+        }
+        .rotateDown{
+          transform: rotate(180deg);
+          animation-name: rotateDown;
+          animation-duration: 0.1s;
+        }
+        @keyframes rotateDown {
+          0% {
+            rotate: (180deg);
+          }
+          25% {
+            rotate: (135deg);
+          }
+          50% {
+            rotate: (90deg);
+          }
+          75% {
+            rotate: (45deg);
+          }
+          100% {
+            rotate: (0deg);
+          }
+        }
+        @keyframes rotateUp {
+          100% {
+            rotate: (180deg);
+          }
+          75% {
+            rotate: (135deg);
+          }
+          50% {
+            rotate: (90deg);
+          }
+          25% {
+            rotate: (45deg);
+          }
+          0% {
+            rotate: (0deg);
+          }
+        }
+        &-dropdown{
+          display: flex;
+          flex-direction: column;
+          padding: 2% 4%;
+          background-color: black;
+          border-radius: 4px;
+          border: 0.5px solid white;
+          position: absolute;
+          top:50px;
+          right:0;
         }
       }
     }
