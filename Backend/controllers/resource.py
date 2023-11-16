@@ -408,3 +408,32 @@ def get_upcoming_movies():
 
     clean_list(upcoming)
     return jsonify(upcoming), 200
+
+
+#Returns movies by theater
+@resource.route('/api/theater/<theater_id>/movies', methods=['GET'])
+def get_movies_by_theater(theater_id):
+    showtimes = list(cmpe202_db_client.showtimes.find({"theater_id": ObjectId(theater_id)}))
+    if not showtimes:
+        return jsonify({"message": "No showtimes for theater found"}), 404
+    
+    movies = []
+    for show in showtimes:
+        movies.append(cmpe202_db_client.movies.find_one({"_id": show["movie_id"]}))
+
+    clean_list(movies)
+    return jsonify(movies), 200
+
+
+#Returns showtimes by theater
+@resource.route('/api/theater/<theater_id>', methods=['GET'])
+def get_showtimes_by_theater(theater_id):
+    showtimes = list(cmpe202_db_client.showtimes.find({"theater_id": ObjectId(theater_id)}))
+    if not showtimes:
+        return jsonify({"message": "No showtimes for theater found"}), 404
+    
+    for showtime in showtimes:
+        del showtime["theater_id"]
+
+    clean_list(showtimes)
+    return jsonify(showtimes), 200
