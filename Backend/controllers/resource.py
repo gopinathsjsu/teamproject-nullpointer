@@ -383,6 +383,9 @@ def get_movie_showtimes(movie_id):
     showtimes = list(cmpe202_db_client.showtimes.find({"movie_id": ObjectId(movie_id)}))
     if not showtimes:
         return jsonify({"message": "No showtimes for movie found"}), 404
+    
+    for showtime in showtimes:
+        del showtime["movie_id"]
 
     clean_list(showtimes)
     return jsonify(showtimes), 200
