@@ -2,6 +2,7 @@
   width: 80%;
   margin: 0 auto;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 80vh;
@@ -20,6 +21,7 @@
     .showing-container{
       display: flex;
       flex-direction: row;
+      flex-wrap: wrap;
       .show {
         width: 33%;
         height: 100%;

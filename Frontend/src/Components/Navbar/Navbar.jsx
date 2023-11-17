@@ -1,12 +1,17 @@
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import classNames from 'classnames';
+import { useDispatch } from 'react-redux';
 
 import Select from '../Select/Select';
 import Avatar from '../../assets/avatar.png';
 import Logo from '../../assets/logo.png';
 import Caret from '../../assets/caret.svg';
+import { setSelectedTheaterInfo, setSelectedLocationInfo } from '../../Redux/dashboardReducer';
 import './Navbar.scss';
+import { setDashboard } from "../../Redux/dashboardReducer";
+import { host } from '../../env';
+import { useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const { user, dashboard } = useSelector((state) => state);
@@ -15,11 +20,27 @@ const Navbar = () => {
   const [ selectedLocation, setSelectedLocation ] = useState(locations?.[0] || {});
   const [ selectedTheater, setSelectedTheater ] = useState(theaters?.[0] || {});
   const [ dropdownCicked, setDropdownClicked ] = useState(false);
+  const dispatch = useDispatch();
+  const path = useLocation().pathname;
+
+  const getData = () =>{
+    fetch(`${host}/api/all_locations`)
+    .then((resp) => resp.json())
+    .then((data) => {
+      dispatch(setDashboard(data));
+    })
+  };
+
+  useEffect(() => {
+    getData();
+  }, [])
 
   useEffect(() => {
     if(dashboard?.locations){ 
       setLocations(dashboard?.locations);
       setTheatres(dashboard?.theaters);
+      setSelectedLocation(dashboard?.locations?.[0])
+      setSelectedTheater(dashboard?.theaters?.[0])
     }
   },[dashboard]);
 
@@ -30,11 +51,18 @@ const Navbar = () => {
 
   const handleSetTheater = (e) =>{
     const theater = theaters?.filter(({name}) => name === e?.target?.value)?.[0];
-    setSelectedTheater(theater);
+    setSelectedTheater({...theater});
   }
-  
+
+  useEffect(() => {
+    if(selectedTheater?.id)
+      dispatch(setSelectedTheaterInfo({...selectedTheater}));
+  }, [selectedTheater])
+
   useEffect(() => {
     setTheatres(dashboard?.theaters?.filter((theater) => theater?.locationId === selectedLocation?.id));
+    setSelectedTheater(dashboard?.theaters?.[0]);
+    dispatch(setSelectedLocationInfo({...selectedLocation}));
   },[selectedLocation]);
 
   const handleLogout = () => {
@@ -49,7 +77,7 @@ const Navbar = () => {
           <img src={Logo} alt="avatar" width={80} height={40}/>
         </a>
         {
-          window.location.pathname === '/' &&(
+          path === '/' &&(
             <>
             <Select 
               label={"Location"}
@@ -83,9 +111,9 @@ const Navbar = () => {
               Login/Register
             </a>
           :
-          <div class='avatar' role="button" onClick={() => setDropdownClicked(!dropdownCicked)}>
+          <div className='avatar' role="button" onClick={() => setDropdownClicked(!dropdownCicked)}>
             <img src={Avatar} alt="avatar" width={40} height={40}/>
-            <img src={Caret} width={20} height={20} class={classNames({
+            <img src={Caret} width={20} height={20} className={classNames({
               'rotateDown': dropdownCicked,
               'rotateUp': !dropdownCicked
             })} alt="caret"/>
