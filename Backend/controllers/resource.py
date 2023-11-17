@@ -199,6 +199,59 @@ def get_active_price(showtime_id):
     return price - (price * discount / 100) if discount else price
 
 
+#Returns total_potential and total_used seats per theater over past days
+def theater_capacity_used(theater_id, past_days):
+    cur_date = datetime.utcnow()
+    past_date = cur_date - timedelta(days=past_days)
+    showtimes = list(cmpe202_db_client.showtimes.find({
+        "theater_id": theater_id,
+        "show_date": {
+                "$gte": past_date,
+                "$lte": cur_date
+            },
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
+    if not showtimes:
+        return jsonify({"message": "No showtimes for theater found"}), 404
+    
+    try:
+        theater_seats = cmpe202_db_client.theaters.find_one({
+            "_id": theater_id,
+            "$or": [
+                        {"deleted": {"$exists": False}},
+                        {"deleted": False}
+            ]
+            })["seating_capacity"]
+    except Exception:
+        return jsonify({"message": "Bad theater_id given"}), 400
+    
+    total_used = 0
+    total_potential = len(showtimes) * theater_seats
+    
+    for show in showtimes:
+        tmp = list(cmpe202_db_client.tickets.aggregate([{
+            "$match": {
+                "showtime_id": show["_id"],
+                "$or": [
+                        {"deleted": {"$exists": False}},
+                        {"deleted": False}
+                ]
+                }},
+            {"$group": {
+                "_id": "null",
+                "sum": {"$sum": "$ticket_count"}
+            }}]))
+        total_used += tmp[0]["sum"] if tmp else 0
+
+    return {
+        "total_used": total_used,
+        "total_potential": total_potential
+    }
+
+
 
 @resource.route('/api/testadd', methods=['GET'])
 def get_ddshowtimes():
@@ -670,3 +723,15 @@ def get_showtimes_by_theater(theater_id):
 
     clean_list(showtimes)
     return jsonify(showtimes), 200
+
+
+#Returns showtimes by theater
+#Expects in body: "past_days" (int) (opt, default 30)
+@resource.route('/api/theater/<theater_id>/occupancy', methods=['GET'])
+def get_theater_occupancy(theater_id):
+    try:
+        val = request.get_json()
+        past_days = val["past_days"] if "past_days" in val else 30
+        return jsonify(theater_capacity_used(ObjectId(theater_id), past_days)), 200
+    except Exception:
+        return jsonify(theater_capacity_used(ObjectId(theater_id), 30)), 200
