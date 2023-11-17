@@ -438,12 +438,16 @@ def buy_vip(*args, **kwargs):
 #Returns the showtimes for a given movie
 @resource.route('/api/movie/<movie_id>', methods=['GET'])
 def get_movie_showtimes(movie_id):
-    showtimes = list(cmpe202_db_client.showtimes.find({"movie_id": ObjectId(movie_id)}))
-    if not showtimes:
+    movie = cmpe202_db_client.movies.find_one({"_id": ObjectId(movie_id)})
+    del movie["_id"]
+
+
+    movie["showtimes"] = list(cmpe202_db_client.showtimes.find({"movie_id": ObjectId(movie_id)}))
+    if not movie["showtimes"]:
         return jsonify({"message": "No showtimes for movie found"}), 404
     
     full = []
-    for showtime in showtimes:
+    for showtime in movie["showtimes"]:
         if get_remaining_seats(showtime["_id"]) > 0:
             del showtime["movie_id"]
             showtime["price"] = get_active_price(showtime["_id"])
@@ -451,13 +455,13 @@ def get_movie_showtimes(movie_id):
             full.append(showtime)
 
     for x in full:
-        showtimes.remove(x)
+        movie["showtimes"].remove(x)
 
-    if not showtimes:
+    if not movie["showtimes"]:
         return jsonify({"message": "No showtimes for movie found"}), 404
 
-    clean_list(showtimes)
-    return jsonify(showtimes), 200
+    clean_list(movie)
+    return jsonify(movie), 200
 
 
 #Returns upcoming movies (no showtime or > 1 month out)
