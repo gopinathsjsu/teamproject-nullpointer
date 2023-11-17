@@ -324,12 +324,12 @@ def insert_discount(*args, **kwargs):
         discount_data["end_hour"] = data["end_hour"]
 
     if "start_date" in data:
-        discount_data["start_date"] = datetime.datetime.fromisoformat(data["start_date"])
+        discount_data["start_date"] = jsdate_to_datetime(data["start_date"])
     else:
         discount_data["start_date"] = datetime.datetime.now()
 
     if "end_date" in data:
-        discount_data["end_date"] = datetime.datetime.fromisoformat(data["end_date"])
+        discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
     else:
         discount_data["end_date"] = datetime.datetime.now() + datetime.timedelta(days=365)
 
