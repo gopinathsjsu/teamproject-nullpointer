@@ -4,6 +4,11 @@
     text-align: center;
 }
 
+input {
+    max-width: 300px;
+    width: 100%;
+}
+
 .title {
     text-decoration: underline;
 }
@@ -57,4 +62,14 @@
 
 .list-box::-webkit-scrollbar-thumb:hover {
     background-color: #c90000;
+}
+
+.error-message {
+    font-size: 14px;
+    color:#ff0000
+}
+
+.confirm-message {
+    font-size: 14px;
+    color: green;
 }
