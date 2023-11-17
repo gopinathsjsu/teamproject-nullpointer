@@ -862,7 +862,7 @@ def get_location_occupancies():
         return jsonify({"message": "No locations found"}), 404
     
     for location in locations:
-        location["capacity"] = location_capacity_used(location["_id"], past_days)
+        location["occupancy"] = location_capacity_used(location["_id"], past_days)
 
     clean_list(locations)
     return jsonify(locations), 200
@@ -902,7 +902,7 @@ def get_movie_occupancies():
         return jsonify({"message": "No movie found"}), 404
     
     for movie in movies:
-        movie["capacity"] = movie_capacity_used(movie["_id"], past_days)
+        movie["occupancy"] = movie_capacity_used(movie["_id"], past_days)
 
     clean_list(movies)
     return jsonify(movies), 200
