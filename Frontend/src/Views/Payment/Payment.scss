@@ -15,15 +15,46 @@
     width: 50%;
     display: flex;
     flex-direction: column;
+    .success{
+      color: lightgreen;
+      margin: 1% 0;
+    }
+    .error{
+      color: red;
+      margin: 1% 0;
+    }
   }
   &-item{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    margin: 1%;
+    p{
+      margin: 0;
+    }
+    p:nth-of-type(2), input{
+      width: 10%;
+      text-align: right;
+    }
+    input{
+      width: 5%;
+    }
+    p:nth-of-type(1){
+      width: 30%;
+    }
   }
   &-method{
     display: flex;
     flex-direction: column;
+    width: 100%;
+    .card-number{
+      max-width: none;
+      width: 98%;
+    }
+    .card-name{
+      max-width: none;
+      width: 98%;
+    }
     & > * {
       margin:1% 0;
     }
@@ -33,11 +64,11 @@
       justify-content: space-between;
       width: 100%;
       .card-expiry{
-        width: 45%;
+        width: 49%;
         display: inline;
       }
       .card-cvv{
-        width: 45%;
+        width: 49%;
         display: inline;
       }
     }
