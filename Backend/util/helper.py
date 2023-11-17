@@ -165,3 +165,10 @@ def register_user(user):
 
     cmpe202_db_client.users.insert_one(user)
     return jsonify({"message": "Successful"}), 201
+
+
+#Converts javascript date ISO to python datetime
+def jsdate_to_datetime(js_date):
+    if js_date.endswith('Z'):
+        return datetime.datetime.fromisoformat(js_date[:-1])
+    return datetime.datetime.fromisoformat(js_date)

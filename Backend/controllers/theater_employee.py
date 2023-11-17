@@ -6,7 +6,7 @@ from flask import abort, Blueprint, make_response, request, jsonify
 import config.app_config as app_config
 from util.app_logger import AppLogger
 from util.db_initializer import DBServiceInitializer
-from util.helper import check_auth, clean_obj, clean_list
+from util.helper import check_auth, clean_obj, clean_list, jsdate_to_datetime
 
 
 theater_employee = Blueprint('theater_employee', __name__)
@@ -356,32 +356,32 @@ def get_discounts(*args, **kwargs):
 
 
 #Expects in body: "name" (str) (opt) or "seating_capacity" (int) (opt)
-@theater_employee.route('/api/theater_employee/update_theater/<theater_id>', methods=['PATCH'])
-@check_auth(roles=["Admin"])
-def update_theater(theater_id, *args, **kwargs):
-    data = request.get_json()
+# @theater_employee.route('/api/theater_employee/update_theater/<theater_id>', methods=['PATCH'])
+# @check_auth(roles=["Admin"])
+# def update_theater(theater_id, *args, **kwargs):
+#     data = request.get_json()
 
     
 
-    if "name" in data:
-        cmpe202_db_client.theaters.update_one(
-            {"_id": ObjectId(theater_id)},
-            {"$set": {
-                "name": data["name"]
-            }}
-        )
+#     if "name" in data:
+#         cmpe202_db_client.theaters.update_one(
+#             {"_id": ObjectId(theater_id)},
+#             {"$set": {
+#                 "name": data["name"]
+#             }}
+#         )
 
-    if "seating_capacity" in data:
-        cmpe202_db_client.theaters.update_one(
-            {"_id": ObjectId(theater_id)},
-            {"$set": {
-                "seating_capacity": data["seating_capacity"]
-            }}
-        )
+#     if "seating_capacity" in data:
+#         cmpe202_db_client.theaters.update_one(
+#             {"_id": ObjectId(theater_id)},
+#             {"$set": {
+#                 "seating_capacity": data["seating_capacity"]
+#             }}
+#         )
 
-    logger.info("theater : ID ({0})".format(theater_id))
+#     logger.info("theater : ID ({0})".format(theater_id))
 
-    return jsonify({"message": "theater Update Successfull"})
+#     return jsonify({"message": "theater Update Successfull"})
 
 
 #Soft deletes a given discount
@@ -406,7 +406,7 @@ def insert_showtimes(*args, **kwargs):
     showtime_data = {
         "theater_id": ObjectId(data["theater_id"]),
         "movie_id": ObjectId(data["movie_id"]),
-        "show_date": datetime.datetime.fromisoformat(data["show_date"]),
+        "show_date": jsdate_to_datetime(data["show_date"]),
         "added_date": datetime.datetime.now(),
         "added_by": kwargs["user"]
     }
