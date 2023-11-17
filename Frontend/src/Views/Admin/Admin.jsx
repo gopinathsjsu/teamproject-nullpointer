@@ -14,11 +14,12 @@ const Admin = () => {
     // Movie Inputs
     const [movieName, setMovieName] = useState('');
     const [newMovieName, setNewMovieName] = useState('');
-
+    
     // showtime inputs
     const [theaterID, setTheaterID] = useState('');
     const [movieID, setMovieID] = useState('');
     const [showDate, setShowDate] = useState('');
+    const [showtimeID, setShowtimeID] = useState('');
 
     //theater CRUD inputs
 
@@ -35,6 +36,12 @@ const Admin = () => {
         updateScheduleOption(e);
         setErrorMessage("");
         setConfirmMessage("");
+        setMovieName("");
+        setNewMovieName("");
+        setTheaterID("");
+        setMovieID("");
+        setShowDate("");
+        setShowtimeID("");
     };
 
     // display the input fields for CRUD (add/update/remove movies/showtimes/theaters)
@@ -53,6 +60,13 @@ const Admin = () => {
                             required placeholder="new movie name (update)"
                             value={newMovieName}
                             onChange={(e) => setNewMovieName(e.target.value)}
+                        />
+                        <br></br>
+                        <input
+                            type="text"
+                            required placeholder="Movie ID (remove)"
+                            value={movieID}
+                            onChange={(e) => setMovieID(e.target.value)}
                         />
                     </div>
         }
@@ -75,9 +89,16 @@ const Admin = () => {
                         <br></br>
                         <input
                             type="text"
-                            required placeholder="Show Date (ISO 8601 datetime format)"
+                            required placeholder="Show Date (ex: 16 November 2023 14:48 UTC)"
                             value={showDate}
                             onChange={(e) => setShowDate(e.target.value)}
+                        />
+                        <br></br>
+                        <input
+                            type="text"
+                            required placeholder="Showtime ID (remove)"
+                            value={showtimeID}
+                            onChange={(e) => setShowtimeID(e.target.value)}
                         />
                     </div>
         }
@@ -87,7 +108,7 @@ const Admin = () => {
     }
 
     /* MOVIE API CALLS */
-    // ADD API call (just call API and override)
+    // ADD MOVIE
     const insertMovie = () => {
         setErrorMessage("");
         setConfirmMessage("");
@@ -117,26 +138,27 @@ const Admin = () => {
           })
           .catch((error) => {
             //console.log("Error: ", error);
-            setErrorMessage(error.toString());
+            setErrorMessage("Error: Input syntax");
           });
 
         setMovieName("");
         setNewMovieName("");
+        setMovieID("");
     }
 
-    // REMOVE API call (just call API and override)
+    // REMOVE MOVIE
     const removeMovie = () => {
         setErrorMessage("");
         setConfirmMessage("");
         
-        if(movieName === "") {
+        if(movieID === "") {
             //console.log("Error: empty movie name");
             setErrorMessage("Error: empty movie name");
             return;
         }
 
-        console.log(`${host}/api/theater_employee/delete_movie/${movieName}`);
-        fetch(`${host}/api/theater_employee/delete_movie/${movieName}`, {
+        console.log(`${host}/api/theater_employee/delete_movie/${movieID}`);
+        fetch(`${host}/api/theater_employee/delete_movie/${movieID}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -145,23 +167,26 @@ const Admin = () => {
         })
         .then((resp) => resp.json())
         .then((data) => {
-        setConfirmMessage("Movie removed successfully");
+            setConfirmMessage("Movie removed successfully");
         })
         .catch((error) => {
         //console.log("Error: ", error);
-        setErrorMessage(error.toString());
+            setErrorMessage("Error: Input syntax");
         });
 
         setMovieName("");
         setNewMovieName("");
+        setMovieID("");
     }
 
     /* SHOWTIME API CALLS */
+    // ADD SHOWTIME
     const insertShowtime = () => {
         setErrorMessage("");
         setConfirmMessage("");
         const event = new Date(showDate);
 
+        console.log(event);
         const data = {
             theater_id: theaterID,
             movie_id: movieID,
@@ -188,11 +213,45 @@ const Admin = () => {
           })
           .catch((error) => {
             //console.log("Error: ", error);
-            setErrorMessage(error.toString());
+            setErrorMessage("Error: Input syntax");
           });
 
-        setMovieName("");
-        setNewMovieName("");
+        setTheaterID("");
+        setMovieID("");
+        setShowDate("");
+        setShowtimeID("");
+    }
+
+    // REMOVE SHOWTIME
+    const removeShowtime = () => {
+        setErrorMessage("");
+        setConfirmMessage("");
+        
+        if(showtimeID === "") {
+            //console.log("Error: empty movie name");
+            setErrorMessage("Error: empty movie name");
+            return;
+        }
+
+        fetch(`${host}/api/theater_employee/delete_showtime/${showtimeID}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            'x-access-token': localStorage.getItem('x-access-token'),
+          },
+        })
+        .then((resp) => resp.json())
+        .then((data) => {
+            setConfirmMessage("Showtime removed successfully");
+        })
+        .catch((error) => {
+            setErrorMessage("Error: Input syntax");
+        });
+
+        setTheaterID("");
+        setMovieID("");
+        setShowDate("");
+        setShowtimeID("");
     }
 
     function displayMessage() {
@@ -215,7 +274,8 @@ const Admin = () => {
             <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? insertMovie : 
                                                                             scheduleOption === "Showtime" ? insertShowtime : null}> Add </Button>
             <Button className="button-style" type="button-primary" onClick={null}> Update </Button>
-            <Button className="button-style" type="button-primary" onClick={removeMovie}> Remove </Button>
+            <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? removeMovie :
+                                                                            scheduleOption === "Showtime" ? removeShowtime : null}> Remove </Button>
             <select className="drop-down" value={scheduleOption} onChange={handleOptionChange}>
                 <option value="Movies">Movies</option>
                 <option value="Showtime">Showtimes</option>
