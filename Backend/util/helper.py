@@ -14,7 +14,13 @@ cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collectio
 
 
 def fetch_user_details(username):
-    rec = cmpe202_db_client.users.find_one({"username": username})
+    rec = cmpe202_db_client.users.find_one({
+        "username": username,
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        })
     return rec
 
 
@@ -48,7 +54,15 @@ def decode_token(token):
     decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
     try:
         user_id = decoded_token_obj["user_id"]
-        rec = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)}, {"password": 0})
+        rec = cmpe202_db_client.users.find_one({
+            "_id": ObjectId(user_id),
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            }, 
+            {"password": 0}
+            )
 
         rec["isMember"] = rec["vip_until"] >= datetime.datetime.utcnow()
         if "isAdmin" not in rec:    #POST_PURGE remove
@@ -159,7 +173,13 @@ def set_token_vars():
 #Registers given user 
 def register_user(user):
     # check if username does not exist in database
-    userExists = cmpe202_db_client.users.find_one({"username": user["username"]})
+    userExists = cmpe202_db_client.users.find_one({
+        "username": user["username"],
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        })
     if userExists:
         return jsonify({"message": "Username already taken"}), 409
 

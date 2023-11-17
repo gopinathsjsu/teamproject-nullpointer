@@ -64,36 +64,74 @@ def create_account_old():
     return jsonify({"message": "Successful"}), 201
 
 
+
+
 #Adds theater["showtimes"] to each theater
 def add_showtimes_to_theaters(theaters):
     for theater in theaters:
-        theater["showtimes"] = list(cmpe202_db_client.showtimes.find({"theater_id": theater["_id"]}))
+        theater["showtimes"] = list(cmpe202_db_client.showtimes.find({
+            "theater_id": theater["_id"],
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            }))
 
 
 #Adds ticket["showtime"] to each ticket
 def add_showtime_to_tickets(tickets):
     for ticket in tickets:
-        ticket["showtime"] = cmpe202_db_client.showtimes.find_one({"_id": ticket["showtime_id"]})
+        ticket["showtime"] = cmpe202_db_client.showtimes.find_one({
+            "_id": ticket["showtime_id"],
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            })
 
 
 #Adds showtime["movie"] to each showtime
 def add_movie_to_showtimes(showtimes):
     for show in showtimes:
-        show["movie"] = cmpe202_db_client.movies.find_one({"_id": show["movie_id"]})
+        show["movie"] = cmpe202_db_client.movies.find_one({
+            "_id": show["movie_id"],
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            })
 
 
 #Returns the number of remaining seats in showtime, expects ObjectId
 def get_remaining_seats(showtime_id):
     try:
-        theater_id = cmpe202_db_client.showtimes.find_one({"_id": showtime_id})["theater_id"]
+        theater_id = cmpe202_db_client.showtimes.find_one({
+            "_id": showtime_id,
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            })["theater_id"]
     except(Exception):
         return jsonify({"message": "Bad showtime ID"}), 400
 
-    theater_seats = cmpe202_db_client.theaters.find_one({"_id": theater_id})["seating_capacity"]
+    theater_seats = cmpe202_db_client.theaters.find_one({
+        "_id": theater_id,
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        })["seating_capacity"]
 
     #Probably a better way to get just the sum value out of this
     tmp = list(cmpe202_db_client.tickets.aggregate([{
-        "$match": {"showtime_id": showtime_id}},
+        "$match": {
+            "showtime_id": showtime_id,
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            }},
         {"$group": {
             "_id": "null",
             "sum": {"$sum": "$ticket_count"}
@@ -106,7 +144,13 @@ def get_remaining_seats(showtime_id):
 #Calculates the price of a showtime based on active discounts
 def get_active_price(showtime_id):
     try:
-        show_date = cmpe202_db_client.showtimes.find_one({"_id": showtime_id})["show_date"]
+        show_date = cmpe202_db_client.showtimes.find_one({
+            "_id": showtime_id,
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            })["show_date"]
     except(Exception):
         return jsonify({"message": "Bad showtime ID"}), 400
     
@@ -186,7 +230,13 @@ def get_showtimes():
 #Returns theaters and their showtimes, search by location_id 
 @resource.route('/api/theaters/<location_id>', methods=['GET'])
 def get_theaters_by_location(location_id):
-    theaters = list(cmpe202_db_client.theaters.find({"location_id": ObjectId(location_id)}))
+    theaters = list(cmpe202_db_client.theaters.find({
+        "location_id": ObjectId(location_id),
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
     add_showtimes_to_theaters(theaters)
 
     clean_list(theaters)
@@ -198,7 +248,13 @@ def get_theaters_by_location(location_id):
 def get_all_locations():
     locations = list(cmpe202_db_client.locations.find({}))
     for location in locations:
-        location["theaters"] = list(cmpe202_db_client.theaters.find({"location_id": location["_id"]}))
+        location["theaters"] = list(cmpe202_db_client.theaters.find({
+            "location_id": location["_id"],
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            }))
 
     clean_list(locations)
     return jsonify(locations), 200
@@ -272,7 +328,13 @@ def buy_tickets(*args, **kwargs):
 @resource.route('/api/user_tickets/<check_user_id>', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_user_tickets_admin(check_user_id, *args, **kwargs):
-    tickets = list(cmpe202_db_client.tickets.find({"user_id": ObjectId(check_user_id)}))
+    tickets = list(cmpe202_db_client.tickets.find({
+        "user_id": ObjectId(check_user_id),
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
     add_showtime_to_tickets(tickets)
@@ -285,7 +347,13 @@ def get_user_tickets_admin(check_user_id, *args, **kwargs):
 @resource.route('/api/user_tickets', methods=['GET'])
 @check_auth()
 def get_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.tickets.find({"user_id": kwargs["user_id"]}))
+    tickets = list(cmpe202_db_client.tickets.find({
+        "user_id": kwargs["user_id"],
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
     add_showtime_to_tickets(tickets)
@@ -298,7 +366,13 @@ def get_user_tickets(*args, **kwargs):
 @resource.route('/api/prev_user_tickets', methods=['GET'])
 @check_auth()
 def get_prev_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.tickets.find({"user_id": kwargs["user_id"]}))
+    tickets = list(cmpe202_db_client.tickets.find({
+        "user_id": kwargs["user_id"],
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
@@ -309,7 +383,12 @@ def get_prev_user_tickets(*args, **kwargs):
             "_id": ticket["showtime_id"], 
             "show_date": {
                 "$lte": cur_date
-            }})
+            },
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            })
         if tmp:
             ticket["showtime"] = tmp
             prev_tickets.append(ticket)
@@ -328,7 +407,13 @@ def get_prev_user_tickets(*args, **kwargs):
 @resource.route('/api/future_user_tickets', methods=['GET'])
 @check_auth()
 def get_future_user_tickets(*args, **kwargs):
-    tickets = list(cmpe202_db_client.tickets.find({"user_id": kwargs["user_id"]}))
+    tickets = list(cmpe202_db_client.tickets.find({
+        "user_id": kwargs["user_id"],
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
@@ -339,7 +424,12 @@ def get_future_user_tickets(*args, **kwargs):
             "_id": ticket["showtime_id"], 
             "show_date": {
                 "$gte": cur_date
-            }})
+            },
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            })
         if tmp:
             ticket["showtime"] = tmp
             future_tickets.append(ticket)
@@ -348,7 +438,13 @@ def get_future_user_tickets(*args, **kwargs):
         return jsonify({"message": "No movies to be watched"}), 404
     
     for ticket in future_tickets:
-        ticket["showtime"]["movie"] = cmpe202_db_client.movies.find_one({"_id": ticket["showtime"]["movie_id"]})
+        ticket["showtime"]["movie"] = cmpe202_db_client.movies.find_one({
+            "_id": ticket["showtime"]["movie_id"],
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            })
 
     clean_list(future_tickets)
     return jsonify(future_tickets), 200
@@ -358,11 +454,23 @@ def get_future_user_tickets(*args, **kwargs):
 @resource.route('/api/user_ticket/<ticket_id>', methods=['DELETE'])
 @check_auth()
 def delete_ticket(ticket_id, *args, **kwargs):
-    ticket = cmpe202_db_client.tickets.find_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)})
+    ticket = cmpe202_db_client.tickets.find_one({
+        "user_id": kwargs["user_id"], "_id": ObjectId(ticket_id),
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        })
     if not ticket:
         return jsonify({"message": "Requested ticket not found or doesn't belong to user"}), 404
     
-    showtime = cmpe202_db_client.showtimes.find_one({"_id": ticket["showtime_id"]})
+    showtime = cmpe202_db_client.showtimes.find_one({
+        "_id": ticket["showtime_id"],
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        })
     if not showtime:
         return jsonify({"message": "Requested ticket is invalid, no linked showtime"}), 404
     
@@ -370,8 +478,12 @@ def delete_ticket(ticket_id, *args, **kwargs):
         return jsonify({"message": "Can't refund tickets for showings that have already begun"}), 409
 
     if (cmpe202_db_client.tickets.delete_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)}).deleted_count):
-        cmpe202_db_client.users.update_one(
-            {"_id": kwargs["user_id"]},
+        cmpe202_db_client.users.update_one({
+            "_id": kwargs["user_id"],
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]},
             {"$set": {
                 "points": kwargs["points"] - ticket["paid"]
             }
@@ -399,7 +511,12 @@ def get_recent_movies(*args, **kwargs):
             "show_date": {
                 "$gte": past_date,
                 "$lte": cur_date
-            }})
+            },
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            })
         if tmp:
             showtimes.append(tmp)
     
@@ -423,9 +540,14 @@ def buy_vip(*args, **kwargs):
     
     vip_until = datetime.utcnow() + timedelta(days=365)
     
-    cmpe202_db_client.users.update_one(
-        {"_id": kwargs["user_id"]},
-        {"$set": {"vip_until": vip_until}}
+    cmpe202_db_client.users.update_one({
+        "_id": kwargs["user_id"],
+        "$or": [
+                {"deleted": {"$exists": False}},
+                {"deleted": False}
+        ]
+        },
+        {"$set": {"vip_until": vip_until}},
         )
     
     ret = {
@@ -438,7 +560,13 @@ def buy_vip(*args, **kwargs):
 #Returns the showtimes for a given movie
 @resource.route('/api/movie/<movie_id>', methods=['GET'])
 def get_movie_showtimes(movie_id):
-    movie = cmpe202_db_client.movies.find_one({"_id": ObjectId(movie_id)})
+    movie = cmpe202_db_client.movies.find_one({
+        "_id": ObjectId(movie_id),
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        })
     del movie["_id"]
 
 
@@ -472,7 +600,11 @@ def get_movie_showtimes(movie_id):
 #Returns upcoming movies (no showtime or > 1 month out)
 @resource.route('/api/upcoming_movies', methods=['GET'])
 def get_upcoming_movies():
-    movies = list(cmpe202_db_client.movies.find({}))
+    movies = list(cmpe202_db_client.movies.find({
+        "$or": [
+            {"deleted": {"$exists": False}},
+            {"deleted": False}
+        ]}))
     upcoming = []
     future = datetime.utcnow() + timedelta(days=30)
     for movie in movies:
@@ -480,7 +612,11 @@ def get_upcoming_movies():
             "movie_id": movie["_id"],
             "show_date": {
                 "$lte": future
-            }
+            },
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
         })
         if not showtime:
             upcoming.append(movie)
@@ -492,13 +628,25 @@ def get_upcoming_movies():
 #Returns movies by theater
 @resource.route('/api/theater/<theater_id>/movies', methods=['GET'])
 def get_movies_by_theater(theater_id):
-    showtimes = list(cmpe202_db_client.showtimes.find({"theater_id": ObjectId(theater_id)}))
+    showtimes = list(cmpe202_db_client.showtimes.find({
+        "theater_id": ObjectId(theater_id),
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
     if not showtimes:
         return jsonify({"message": "No showtimes for theater found"}), 404
     
     movies = []
     for show in showtimes:
-        movies.append(cmpe202_db_client.movies.find_one({"_id": show["movie_id"]}))
+        movies.append(cmpe202_db_client.movies.find_one({
+            "_id": show["movie_id"],
+            "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+            ]
+            }))
 
     clean_list(movies)
     return jsonify(movies), 200
@@ -507,7 +655,13 @@ def get_movies_by_theater(theater_id):
 #Returns showtimes by theater
 @resource.route('/api/theater/<theater_id>', methods=['GET'])
 def get_showtimes_by_theater(theater_id):
-    showtimes = list(cmpe202_db_client.showtimes.find({"theater_id": ObjectId(theater_id)}))
+    showtimes = list(cmpe202_db_client.showtimes.find({
+        "theater_id": ObjectId(theater_id),
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
     if not showtimes:
         return jsonify({"message": "No showtimes for theater found"}), 404
     
