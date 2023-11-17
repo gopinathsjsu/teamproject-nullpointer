@@ -446,6 +446,7 @@ def get_movie_showtimes(movie_id):
     for showtime in showtimes:
         if get_remaining_seats(showtime["_id"]) > 0:
             del showtime["movie_id"]
+            showtime["price"] = get_active_price(showtime["_id"])
         else:
             full.append(showtime)
 
