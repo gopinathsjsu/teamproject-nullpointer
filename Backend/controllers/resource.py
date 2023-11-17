@@ -442,7 +442,12 @@ def get_movie_showtimes(movie_id):
     del movie["_id"]
 
 
-    movie["showtimes"] = list(cmpe202_db_client.showtimes.find({"movie_id": ObjectId(movie_id)}))
+    movie["showtimes"] = list(cmpe202_db_client.showtimes.find({
+        "movie_id": ObjectId(movie_id), 
+        "$or": [
+            {"deleted": {"$exists": False}},
+            {"deleted": False}
+        ]}))
     if not movie["showtimes"]:
         return jsonify({"message": "No showtimes for movie found"}), 404
     
