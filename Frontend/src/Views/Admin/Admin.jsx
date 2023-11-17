@@ -21,14 +21,34 @@ const Admin = () => {
     const [showDate, setShowDate] = useState('');
     const [showtimeID, setShowtimeID] = useState('');
 
-    //theater CRUD inputs
+    // theater inputs
+    const [theaterName, setTheaterName] = useState('');
+    const [theaterLocationID, setTheaterLocationID] = useState('');
+    const [seatCapacity, setSeatCapacity] = useState('');
 
+    // Analytics inputs
+    const [analyticTheaterID, setAnalyticTheaterID] = useState('');
+
+    function defaultFields() {
+        setMovieName('');
+        setNewMovieName('');
+        setTheaterID('');
+        setMovieID('');
+        setShowDate('');
+        setShowtimeID('');
+        setTheaterName('');
+        setTheaterLocationID('');
+        setSeatCapacity('');
+    }
+
+    //theater CRUD inputs
     function updateScheduleOption(e) {
         setScheduleOption(e.target.value);
     }
 
     function updateViewOption(e) {
         setViewOption(e.target.value);
+        //getTheaterOccupancy()
     }
 
 
@@ -36,12 +56,7 @@ const Admin = () => {
         updateScheduleOption(e);
         setErrorMessage("");
         setConfirmMessage("");
-        setMovieName("");
-        setNewMovieName("");
-        setTheaterID("");
-        setMovieID("");
-        setShowDate("");
-        setShowtimeID("");
+        defaultFields();
     };
 
     // display the input fields for CRUD (add/update/remove movies/showtimes/theaters)
@@ -70,7 +85,6 @@ const Admin = () => {
                         />
                     </div>
         }
-        //#Expects in body: "theater_id" (str), "movie_id" (str), "show_date" (str) (ISO 8601 datetime format)
         else if(scheduleOption === "Showtime") {
             return <div className="input-container">
                         <input
@@ -103,7 +117,35 @@ const Admin = () => {
                     </div>
         }
         else if(scheduleOption === "Theater") {
-            return <h1> THEATER </h1>
+            return <div className="input-container">
+                        <input
+                            type="text"
+                            required placeholder="theater name"
+                            value={theaterName}
+                            onChange={(e) => setTheaterName(e.target.value)}
+                        />
+                        <br></br>
+                        <input
+                            type="text"
+                            required placeholder="theater location ID"
+                            value={theaterLocationID}
+                            onChange={(e) => setTheaterLocationID(e.target.value)}
+                        />
+                        <br></br>
+                        <input
+                            type="text"
+                            required placeholder="seat capacity"
+                            value={seatCapacity}
+                            onChange={(e) => setSeatCapacity(e.target.value)}
+                        />
+                        <br></br>
+                        <input
+                            type="text"
+                            required placeholder="Theater ID (remove)"
+                            value={theaterID}
+                            onChange={(e) => setTheaterID(e.target.value)}
+                        />
+                    </div>
         }
     }
 
@@ -141,9 +183,7 @@ const Admin = () => {
             setErrorMessage("Error: Input syntax");
           });
 
-        setMovieName("");
-        setNewMovieName("");
-        setMovieID("");
+        defaultFields();
     }
 
     // REMOVE MOVIE
@@ -174,9 +214,7 @@ const Admin = () => {
             setErrorMessage("Error: Input syntax");
         });
 
-        setMovieName("");
-        setNewMovieName("");
-        setMovieID("");
+        defaultFields();
     }
 
     /* SHOWTIME API CALLS */
@@ -184,6 +222,10 @@ const Admin = () => {
     const insertShowtime = () => {
         setErrorMessage("");
         setConfirmMessage("");
+        if(showDate === '') {
+            setErrorMessage("Error: an input field is empty");
+            return;
+        }
         const event = new Date(showDate);
 
         console.log(event);
@@ -193,7 +235,7 @@ const Admin = () => {
             show_date: event.toISOString()
         }
         
-        if(theaterID === "" || movieID === "" || showDate === "") {
+        if(theaterID === "" || movieID === "") {
             setErrorMessage("Error: an input field is empty");
             return;
         }
@@ -216,10 +258,7 @@ const Admin = () => {
             setErrorMessage("Error: Input syntax");
           });
 
-        setTheaterID("");
-        setMovieID("");
-        setShowDate("");
-        setShowtimeID("");
+          defaultFields();
     }
 
     // REMOVE SHOWTIME
@@ -248,10 +287,77 @@ const Admin = () => {
             setErrorMessage("Error: Input syntax");
         });
 
-        setTheaterID("");
-        setMovieID("");
-        setShowDate("");
-        setShowtimeID("");
+        defaultFields();
+    }
+
+    /* THEATER API CALLS */
+    // ADD THEATER #Expects in body: "name" (str), "location_id" (str), "seating capacity" (int)
+    const insertTheater = () => {
+        setErrorMessage("");
+        setConfirmMessage("");
+
+        if(isNaN(parseInt(seatCapacity))) {
+            setErrorMessage("Error: invalid input for seat capacity");
+            return;
+        }
+
+        const data = {
+            name: theaterName,
+            location_id: theaterLocationID,
+            seating_capacity: seatCapacity
+        }
+        
+        if(theaterName === "" || theaterLocationID === "" || seatCapacity === null) {
+            setErrorMessage("Error: an input field is empty");
+            return;
+        }
+        console.log(data);
+        fetch(`${host}/api/theater_employee/insert_theater`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            'x-access-token': localStorage.getItem('x-access-token'),
+          },
+          body: JSON.stringify(data)
+        })
+          .then((resp) => resp.json())
+          .then((data) => {
+            setConfirmMessage("Theater added successfully");
+          })
+          .catch((error) => {
+            setErrorMessage("Error: Input syntax");
+          });
+
+          defaultFields();
+    }
+
+    // REMOVE THEATER /api/theater_employee/delete_theater/<theater_id>'
+    const removeTheater = () => {
+        setErrorMessage("");
+        setConfirmMessage("");
+        
+        if(theaterID === "") {
+            //console.log("Error: empty movie name");
+            setErrorMessage("Error: empty theater ID");
+            return;
+        }
+
+        fetch(`${host}/api/theater_employee/delete_theater/${theaterID}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            'x-access-token': localStorage.getItem('x-access-token'),
+          },
+        })
+        .then((resp) => resp.json())
+        .then((data) => {
+            setConfirmMessage("Theater removed successfully");
+        })
+        .catch((error) => {
+            setErrorMessage("Error: Input syntax");
+        });
+
+        defaultFields();
     }
 
     function displayMessage() {
@@ -267,15 +373,57 @@ const Admin = () => {
         }
     }
 
+    // View theater occupancy for the last 30/60/90 days
+    const getTheaterOccupancy = () => {
+        fetch(`${host}/api/theater/${analyticTheaterID}/occupancy`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              'x-access-token': localStorage.getItem('x-access-token'),
+            },
+            body: viewOption
+          })
+          .then((resp) => resp.json())
+          .then((data) => {
+              console.log("success", data);
+          })
+          .catch((error) => {
+                console.log("Error: input syntax");
+          });
+  
+          defaultFields();
+    }
+
+    function displayTheaterOccupancy() {
+        if(analyticTheaterID === '') {
+            return <div className="error-message">
+                Error: theater ID is empty
+            </div>
+        }
+        else {
+            return <div>
+                test
+            </div>;
+        }
+
+        defaultFields();
+    }
+
+    function handleAnalyticsUpdate() {
+        getTheaterOccupancy();
+        displayTheaterOccupancy();
+    }
     return (
         <section className="admin-page">
             <h1 className="title">Admin Page</h1>
             <h1> Add/update/remove movies/showtimes/theater assignment in the schedule </h1>
             <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? insertMovie : 
-                                                                            scheduleOption === "Showtime" ? insertShowtime : null}> Add </Button>
+                                                                            scheduleOption === "Showtime" ? insertShowtime :
+                                                                            scheduleOption === "Theater" ? insertTheater : null}> Add </Button>
             <Button className="button-style" type="button-primary" onClick={null}> Update </Button>
             <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? removeMovie :
-                                                                            scheduleOption === "Showtime" ? removeShowtime : null}> Remove </Button>
+                                                                            scheduleOption === "Showtime" ? removeShowtime : 
+                                                                            scheduleOption === "Theater" ? removeTheater : null}> Remove </Button>
             <select className="drop-down" value={scheduleOption} onChange={handleOptionChange}>
                 <option value="Movies">Movies</option>
                 <option value="Showtime">Showtimes</option>
@@ -289,6 +437,16 @@ const Admin = () => {
             <h1 className="title"> Analytics Dashboard</h1>
             <div className="analytics-row">
                 <div className="info-container">
+                    <div className="input-container">
+                        <input
+                            type="text"
+                            required placeholder="Theater ID"
+                            value={analyticTheaterID}
+                            onChange={(e) => setAnalyticTheaterID(e.target.value)}
+                        />
+                    </div>
+                    <br></br>
+                    <Button className="button-style" type="button-primary" onClick={handleAnalyticsUpdate}> Update Display </Button>
                     <h1> Viewing Theater Occupancy for the last: {            
                         <select className="drop-down" value={viewOption} onChange={updateViewOption}>
                             <option value="30">30 days</option>
@@ -299,7 +457,7 @@ const Admin = () => {
                     </h1>
     
                     <div className="list-box">
-                        <p1> * DISPLAY THEATER OCCUPANCY HERE *</p1>
+                        <p1> {displayTheaterOccupancy()} </p1>
 
                     </div>
                 </div>
