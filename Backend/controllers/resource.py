@@ -879,3 +879,30 @@ def get_movie_occupancy(movie_id):
         past_days = 30
 
     return jsonify(movie_capacity_used(ObjectId(movie_id), past_days)), 200
+
+
+#Returns all movie occupancies over past number of days 
+#Expects in body: "past_days" (int) (opt, default 30)
+@resource.route('/api/all_movie_occupancy', methods=['GET'])
+def get_movie_occupancies():
+    try:
+        val = request.get_json()
+        past_days = val["past_days"] if "past_days" in val else 30
+    except Exception:
+        past_days = 30
+
+    movies = list(cmpe202_db_client.movies.find({
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
+
+    if not movies:
+        return jsonify({"message": "No movie found"}), 404
+    
+    for movie in movies:
+        movie["capacity"] = movie_capacity_used(movie["_id"], past_days)
+
+    clean_list(movies)
+    return jsonify(movies), 200
