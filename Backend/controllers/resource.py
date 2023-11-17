@@ -284,6 +284,65 @@ def location_capacity_used(location_id, past_days):
     }
 
 
+#Returns total_potential and total_used seats per movie over past days
+def movie_capacity_used(movie_id, past_days):
+    cur_date = datetime.utcnow()
+    past_date = cur_date - timedelta(days=past_days)
+    showtimes = list(cmpe202_db_client.showtimes.find({
+        "movie_id": movie_id,
+        "show_date": {
+                "$gte": past_date,
+                "$lte": cur_date
+            },
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
+    if not showtimes:
+        return {
+            "total_used": 0, 
+            "total_potential": 0
+        }
+    
+    total_used = 0
+    total_potential = 0
+
+    theater_capacities = {}
+    for show in showtimes:
+        if show["theater_id"] in theater_capacities:
+            total_potential += theater_capacities[show["theater_id"]]
+        else:
+            theater_capacities[show["theater_id"]] = cmpe202_db_client.theaters.find_one({
+                "_id": show["theater_id"],
+                "$or": [
+                            {"deleted": {"$exists": False}},
+                            {"deleted": False}
+                ]
+                })["seating_capacity"]
+            total_potential += theater_capacities[show["theater_id"]]
+        
+        #Probably a better way to get just the sum value out of this
+        tmp = list(cmpe202_db_client.tickets.aggregate([{
+            "$match": {
+                "showtime_id": show["_id"],
+                "$or": [
+                        {"deleted": {"$exists": False}},
+                        {"deleted": False}
+                ]
+                }},
+            {"$group": {
+                "_id": "null",
+                "sum": {"$sum": "$ticket_count"}
+            }}]))
+        total_used += tmp[0]["sum"] if tmp else 0
+
+    return {
+        "total_used": total_used,
+        "total_potential": total_potential
+    }
+
+
 # @resource.route('/api/testadd', methods=['GET'])
 # def get_ddshowtimes():
 #     return jsonify({"message": get_active_price(ObjectId("6555ccc14a63291ca6a10162"))}), 200
@@ -807,3 +866,16 @@ def get_location_occupancies():
 
     clean_list(locations)
     return jsonify(locations), 200
+
+
+#Returns all movie occupancies over past number of days 
+#Expects in body: "past_days" (int) (opt, default 30)
+@resource.route('/api/movie/<movie_id>/occupancy', methods=['GET'])
+def get_movie_occupancy(movie_id):
+    try:
+        val = request.get_json()
+        past_days = val["past_days"] if "past_days" in val else 30
+    except Exception:
+        past_days = 30
+
+    return jsonify(movie_capacity_used(ObjectId(movie_id), past_days)), 200
