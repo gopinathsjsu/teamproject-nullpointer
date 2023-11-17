@@ -32,7 +32,7 @@ def insert_movie(*args, **kwargs):
     movie_data = {
         "title": name,
         "image": data["image"],
-        "added_date": datetime.datetime.now(),
+        "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
     movie_id = cmpe202_db_client.movies.insert_one(movie_data).inserted_id
@@ -105,7 +105,7 @@ def insert_location(*args, **kwargs):
 
     location_data = {
         "name": data["location"],
-        "added_date": datetime.datetime.now(),
+        "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
     location_id = cmpe202_db_client.locations.insert_one(location_data).inserted_id
@@ -219,7 +219,7 @@ def insert_theater(*args, **kwargs):
         "name": data["name"],
         "location_id": ObjectId(data["location_id"]),
         "seating_capacity": data["seating_capacity"],
-        "added_date": datetime.datetime.now(),
+        "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
     theater_id = cmpe202_db_client.theaters.insert_one(theater_data).inserted_id
@@ -311,7 +311,7 @@ def insert_discount(*args, **kwargs):
 
     discount_data = {
         "percentage": data["percentage"],
-        "added_date": datetime.datetime.now(),
+        "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
     if "day" in data:
@@ -326,12 +326,12 @@ def insert_discount(*args, **kwargs):
     if "start_date" in data:
         discount_data["start_date"] = jsdate_to_datetime(data["start_date"])
     else:
-        discount_data["start_date"] = datetime.datetime.now()
+        discount_data["start_date"] = datetime.datetime.utcnow()
 
     if "end_date" in data:
         discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
     else:
-        discount_data["end_date"] = datetime.datetime.now() + datetime.timedelta(days=365)
+        discount_data["end_date"] = datetime.datetime.utcnow() + datetime.timedelta(days=365)
 
     discount_id = cmpe202_db_client.discounts.insert_one(discount_data).inserted_id
 
@@ -417,7 +417,7 @@ def insert_showtimes(*args, **kwargs):
         "theater_id": ObjectId(data["theater_id"]),
         "movie_id": ObjectId(data["movie_id"]),
         "show_date": jsdate_to_datetime(data["show_date"]),
-        "added_date": datetime.datetime.now(),
+        "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
     showtime_id = cmpe202_db_client.showtimes.insert_one(showtime_data).inserted_id

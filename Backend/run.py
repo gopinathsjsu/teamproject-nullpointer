@@ -83,7 +83,7 @@ def register():
         "password": hashed_password,
         "is_admin": False,
         "points": 0,
-        "vip_until": datetime.now(),
+        "vip_until": datetime.utcnow(),
     }
 
     return register_user(user)
@@ -108,7 +108,7 @@ def register_admin(*args, **kwargs):
         "password": hashed_password,
         "is_admin": True,
         "points": 0,
-        "vip_until": datetime.now(),
+        "vip_until": datetime.utcnow(),
     }
 
     return register_user(user)
@@ -146,7 +146,7 @@ def register_admin_default():
         "password": hashed_password,
         "is_admin": True,
         "points": 0,
-        "vip_until": datetime.now(),
+        "vip_until": datetime.utcnow(),
     }
 
     return register_user(user)
