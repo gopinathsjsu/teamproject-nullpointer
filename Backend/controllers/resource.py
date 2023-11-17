@@ -442,8 +442,18 @@ def get_movie_showtimes(movie_id):
     if not showtimes:
         return jsonify({"message": "No showtimes for movie found"}), 404
     
+    full = []
     for showtime in showtimes:
-        del showtime["movie_id"]
+        if get_remaining_seats(showtime["_id"]) > 0:
+            del showtime["movie_id"]
+        else:
+            full.append(showtime)
+
+    for x in full:
+        showtimes.remove(x)
+
+    if not showtimes:
+        return jsonify({"message": "No showtimes for movie found"}), 404
 
     clean_list(showtimes)
     return jsonify(showtimes), 200
