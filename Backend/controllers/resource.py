@@ -302,7 +302,7 @@ def get_prev_user_tickets(*args, **kwargs):
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
-    cur_date = datetime.now()
+    cur_date = datetime.utcnow()
     prev_tickets = []
     for ticket in tickets:
         tmp = cmpe202_db_client.showtimes.find_one({
@@ -332,7 +332,7 @@ def get_future_user_tickets(*args, **kwargs):
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
-    cur_date = datetime.now()
+    cur_date = datetime.utcnow()
     future_tickets = []
     for ticket in tickets:
         tmp = cmpe202_db_client.showtimes.find_one({
@@ -366,7 +366,7 @@ def delete_ticket(ticket_id, *args, **kwargs):
     if not showtime:
         return jsonify({"message": "Requested ticket is invalid, no linked showtime"}), 404
     
-    if showtime["show_date"] < datetime.now():
+    if showtime["show_date"] < datetime.utcnow():
         return jsonify({"message": "Can't refund tickets for showings that have already begun"}), 409
 
     if (cmpe202_db_client.tickets.delete_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)}).deleted_count):
@@ -390,7 +390,7 @@ def get_recent_movies(*args, **kwargs):
     if not tickets:
         return jsonify({"message": "No tickets for user found"}), 404
 
-    cur_date = datetime.now()
+    cur_date = datetime.utcnow()
     past_date = cur_date - timedelta(days=30)
     showtimes = []
     for ticket in tickets:
@@ -421,7 +421,7 @@ def buy_vip(*args, **kwargs):
     if (not paid):
         return jsonify({"message": "Too poor"}), 403
     
-    vip_until = datetime.now() + timedelta(days=365)
+    vip_until = datetime.utcnow() + timedelta(days=365)
     
     cmpe202_db_client.users.update_one(
         {"_id": kwargs["user_id"]},
@@ -454,7 +454,7 @@ def get_movie_showtimes(movie_id):
 def get_upcoming_movies():
     movies = list(cmpe202_db_client.movies.find({}))
     upcoming = []
-    future = datetime.now() + timedelta(days=30)
+    future = datetime.utcnow() + timedelta(days=30)
     for movie in movies:
         showtime = cmpe202_db_client.showtimes.find_one({
             "movie_id": movie["_id"],

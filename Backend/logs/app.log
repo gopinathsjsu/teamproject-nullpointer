@@ -322,6 +322,7 @@
 2023-11-16 16:54:03,518	[INFO]	New Showtime Inserted : ID (6556b9ab37a071b78d95d1dd) 
 2023-11-16 17:05:28,901	[INFO]	New Showtime Inserted : ID (6556bc58675a359590dcdcc6) 
 2023-11-16 17:05:57,685	[INFO]	New Showtime Inserted : ID (6556bc75675a359590dcdcc7) 
+<<<<<<< HEAD
 2023-11-16 17:12:55,428	[INFO]	New Showtime Inserted : ID (6556be1775fa0e6c8a37e702) 
 2023-11-16 17:15:21,987	[INFO]	New Showtime Inserted : ID (6556bea975fa0e6c8a37e703) 
 2023-11-16 17:16:19,748	[INFO]	New Showtime Inserted : ID (6556bee375fa0e6c8a37e704) 
@@ -330,3 +331,9 @@
 2023-11-16 17:31:31,939	[INFO]	Movie Deleted : ID (6556c23a666ee31ac30a674e) 
 2023-11-16 17:34:04,052	[INFO]	New Movie Inserted : ID (6556c30b666ee31ac30a674f) 
 2023-11-16 17:34:52,632	[INFO]	Movie Deleted : ID (6556c30b666ee31ac30a674f) 
+=======
+2023-11-16 17:33:27,049	[INFO]	discount : ID (6555cffaf7b8f9fdaa999d10) 
+2023-11-16 17:33:54,882	[INFO]	discount : ID (6555cffaf7b8f9fdaa999d10) 
+2023-11-16 17:36:22,244	[INFO]	New Location Inserted : ID (6556c3962e96ee52ce35824a) 
+2023-11-16 17:37:17,147	[INFO]	New Location Inserted : ID (6556c3cd132b9cfaa439f966) 
+>>>>>>> 3dd1efff893509299181f65be56116149a799d35

@@ -50,7 +50,7 @@ def decode_token(token):
         user_id = decoded_token_obj["user_id"]
         rec = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)}, {"password": 0})
 
-        rec["isMember"] = rec["vip_until"] >= datetime.datetime.now()
+        rec["isMember"] = rec["vip_until"] >= datetime.datetime.utcnow()
         if "isAdmin" not in rec:    #POST_PURGE remove
             rec["isAdmin"] = rec["is_admin"]
 
