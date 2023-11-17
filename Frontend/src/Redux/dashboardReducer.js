@@ -4,7 +4,7 @@ export const dashboard = createSlice({
   name: 'dashboard',
   initialState: {},
   reducers: {
-    setDashboard: (_, action) =>{
+    setDashboard: (state, action) =>{
       const locations = [];
       const theaters = [];
       action?.payload?.forEach(location => {
@@ -21,15 +21,23 @@ export const dashboard = createSlice({
           })
         })
       });
-      return {
-        locations,
-        theaters
-      }
-    }
+      state.locations = locations;
+      state.theaters = theaters;
+    },
+    setSelectedTheaterInfo: (state, action) => {
+      state.selectedTheaterInfo = action.payload
+    },
+    setSelectedLocationInfo: (state, action) => {
+      state.selectedLocationInfo = action.payload
+    },
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { setDashboard } = dashboard.actions
+export const { 
+  setDashboard, 
+  setSelectedTheaterInfo, 
+  setSelectedLocationInfo 
+} = dashboard.actions
 
 export default dashboard.reducer

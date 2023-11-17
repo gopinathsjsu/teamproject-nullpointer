@@ -12,6 +12,7 @@
       display: flex;
       flex-direction: row;
       justify-content: space-between;
+      flex-wrap: wrap;
       .movie{
         width: 30%;
         display: flex;

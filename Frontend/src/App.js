@@ -18,33 +18,40 @@ import './Styles/index.scss'
 const router = (user) => createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard />,
+    element: navBarWrapper(<Dashboard />),
   },
   {
     path: "/login",
-    element: <Login />,
+    element: navBarWrapper(<Login />),
   },
   {
     path: "/register",
-    element: <Register />
+    element: navBarWrapper(<Register />),
   },
   {
     path: "/account",
-    element: user?  <AccountInfo />: <Navigate to="/"/>,
+    element: user?  navBarWrapper(<AccountInfo />): <Navigate to="/"/>,
   },
   {
-    path: '/checkout',
-    element: <Checkout />
+    path: '/checkout/:id',
+    element: navBarWrapper(<Checkout />)
   },
   {
     path: '/payment',
-    element: <Payment />
+    element: navBarWrapper(<Payment />)
   },
   {
     path: '/admin',
-    element: user?.is_admin? <Admin /> : <Navigate to="/" />,
+    element: user?.is_admin? navBarWrapper(<Admin />) : <Navigate to="/" />,
   }
 ]);
+
+const navBarWrapper = (element) => (
+  <>
+    <Navbar/>
+    {element}
+  </>
+)
 
 const App = () => {
   const { user } = useSelector((state) => state);
@@ -66,7 +73,6 @@ const App = () => {
 
   return (
     <>
-      <Navbar/>
       <RouterProvider router={router(user)} />
     </>
   );

@@ -1,68 +1,45 @@
 import Button from "../../Components/Button/Button";
 import "./Dashboard.scss";
-import Oppenheimer from '../../assets/oppenheimer.png';
-import Spiderman from '../../assets/spiderman.png';
-import Elemental from '../../assets/elemental.png';
 import { host } from '../../env';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from "react";
-import { setDashboard } from "../../Redux/dashboardReducer";
+import { useEffect, useState } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const { selectedTheaterInfo } = useSelector((state) => state?.dashboard);
+  const [currentlyShowing, setCurrentlyShowing] = useState([]);
+  const [upcomingMovies, setUpcomingMovies] = useState([]);
 
-  const getData = () =>{
-    fetch(`${host}/api/all_locations`)
+  const getCurrentMovies = () =>{
+    fetch(`${host}/api/theater/${selectedTheaterInfo?.id}/movies`)
     .then((resp) => resp.json())
     .then((data) => {
-      dispatch(setDashboard(data));
+      setCurrentlyShowing([...data]);
     })
-  };
+  }
+
+  const getUpcomingMovies = () => {
+    fetch(`${host}/api/upcoming_movies`)
+    .then((resp) => resp.json())
+    .then((data) => {
+      setUpcomingMovies([...data]);
+    })
+  }
 
   useEffect(() => {
-    getData();
-  }, [])
+    getUpcomingMovies();
+  }, []);
 
-  const movies = {
-    currentlyShowing: [{
-      id:'1',
-      title: 'Oppenheimer',
-      image: Oppenheimer,
-    },
-    {
-      id:'2',
-      title: 'Spiderman',
-      image: Spiderman,
-    },
-    {
-      id:'3',
-      title: 'Elemental',
-      image: Elemental,
-    }
-    ],
-    upcomingMovies: [{
-      id:'1',
-      title: 'Oppenheimer',
-      image: Oppenheimer,
-    },
-    {
-      id:'2',
-      title: 'Spiderman',
-      image: Spiderman,
-    },
-    {
-      id:'3',
-      title: 'Elemental',
-      image: Elemental,
-    }]
-  };
+  useEffect(() => {
+    if(selectedTheaterInfo?.id)
+      getCurrentMovies();
+  }, [selectedTheaterInfo])
     
 
-  const handleBook = () => {
-    navigate("/checkout");
+  const handleBook = (movie) => {
+    navigate("/checkout/"+movie?._id);
   }
   
   return (
@@ -72,13 +49,13 @@ const Dashboard = () => {
           Currently Playing
         </h1>
         <div className="showing-grid">
-          {movies.currentlyShowing.map(movie => (
-            <div className="movie">
+          {currentlyShowing?.map((movie, index) => (
+            <div className="movie" key={index}>
               <img className="movie-image" src={movie.image} alt=''/>
               <h3 className="movie-title">
                 {movie.title}
               </h3>
-              <Button className="movie-book" onClick={handleBook} type={'button-primary'}>Book</Button>
+              <Button className="movie-book" onClick={() => handleBook(movie)} type={'button-primary'}>Book</Button>
             </div>
           ))}
         </div>
@@ -88,8 +65,8 @@ const Dashboard = () => {
           Upcoming Movies
         </h1>
         <div className="showing-grid">
-          {movies.upcomingMovies.map(movie => (
-            <div className="movie">
+          {upcomingMovies?.map((movie, index) => (
+            <div className="movie" key={index}>
               <img className="movie-image" src={movie.image} alt=''/>
               <h3 className="movie-title">
                 {movie.title}
