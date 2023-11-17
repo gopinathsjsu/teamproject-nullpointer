@@ -781,3 +781,29 @@ def get_location_occupancy(location_id):
 
     return jsonify(location_capacity_used(ObjectId(location_id), past_days)), 200
     
+
+#Returns all location occupancies over past number of days 
+#Expects in body: "past_days" (int) (opt, default 30)
+@resource.route('/api/all_location_occupancy', methods=['GET'])
+def get_location_occupancies():
+    try:
+        val = request.get_json()
+        past_days = val["past_days"] if "past_days" in val else 30
+    except Exception:
+        past_days = 30
+
+    locations = list(cmpe202_db_client.locations.find({
+        "$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+        ]
+        }))
+
+    if not locations:
+        return jsonify({"message": "No locations found"}), 404
+    
+    for location in locations:
+        location["capacity"] = location_capacity_used(location["_id"], past_days)
+
+    clean_list(locations)
+    return jsonify(locations), 200
