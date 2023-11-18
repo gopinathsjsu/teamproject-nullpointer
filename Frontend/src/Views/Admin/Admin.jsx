@@ -26,8 +26,15 @@ const Admin = () => {
     const [theaterLocationID, setTheaterLocationID] = useState('');
     const [seatCapacity, setSeatCapacity] = useState('');
 
+    // Seating Capacity inputs
+    const [seatingTheaterID, setSeatingTheaterID] = useState('');
+    const [newSeatingCapacity, setNewSeatingCapacity] = useState('');
+    const [seatingErrorMessage, setSeatingErrorMessage] = useState('');
+    const [seatingConfirmMessage, setSeatingConfirmMessage] = useState('');
+
     // Analytics inputs
     const [analyticTheaterID, setAnalyticTheaterID] = useState('');
+    const [occupancyData, setOccupancyData] = useState(null);
 
     function defaultFields() {
         setMovieName('');
@@ -290,6 +297,19 @@ const Admin = () => {
         defaultFields();
     }
 
+    function displayMessage(displayError, displayConfirm) {
+        if(displayError !== "") {
+            return <div className="error-message">
+                {displayError}
+            </div>
+        }
+        else if(displayConfirm !== "") {
+            return <div className="confirm-message">
+                {displayConfirm}
+            </div>
+        }
+    }
+
     /* THEATER API CALLS */
     // ADD THEATER #Expects in body: "name" (str), "location_id" (str), "seating capacity" (int)
     const insertTheater = () => {
@@ -360,49 +380,65 @@ const Admin = () => {
         defaultFields();
     }
 
-    function displayMessage() {
-        if(errorMessage !== "") {
-            return <div className="error-message">
-                {errorMessage}
-            </div>
+    /* SEATING CAPACITY API CALLS */
+    const updateSeatingCapacity = () => {
+        setSeatingErrorMessage('');
+        setSeatingConfirmMessage('');
+
+        if(isNaN(parseInt(newSeatingCapacity))) {
+            setSeatingErrorMessage("Error: invalid input for seat capacity");
+            return;
         }
-        else if(confirmMessage !== "") {
-            return <div className="confirm-message">
-                {confirmMessage}
-            </div>
-        }
+
+        fetch(`${host}/api/theater_employee/update_theater_seatings/${seatingTheaterID}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            'x-access-token': localStorage.getItem('x-access-token'),
+          },
+          body: JSON.stringify({ seating_capacity: parseInt(newSeatingCapacity)})
+        })
+        .then((resp) => resp.json())
+        .then((data) => {
+            setSeatingConfirmMessage("Theater seatings have been updated");
+            console.log("Seating updated");
+        })
+        .catch((error) => {
+            setSeatingErrorMessage("Error: invalid syntax");
+        });
     }
 
+    /* ANALYTICS API CALLS */
     // View theater occupancy for the last 30/60/90 days
     const getTheaterOccupancy = () => {
-        fetch(`${host}/api/theater/${analyticTheaterID}/occupancy`, {
+        fetch(`${host}/api/theater/${analyticTheaterID}/occupancy?${JSON.stringify(viewOption)}`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
               'x-access-token': localStorage.getItem('x-access-token'),
             },
-            body: viewOption
           })
           .then((resp) => resp.json())
           .then((data) => {
               console.log("success", data);
+              setOccupancyData(data);
           })
           .catch((error) => {
-                console.log("Error: input syntax");
-          });
-  
-          defaultFields();
+                console.log(error);
+                //console.log("Error: input syntax");
+          });  
     }
 
     function displayTheaterOccupancy() {
-        if(analyticTheaterID === '') {
+        if(analyticTheaterID === '' && occupancyData != null) {
             return <div className="error-message">
                 Error: theater ID is empty
             </div>
         }
         else {
+            // note: use occupancy data here
             return <div>
-                test
+                test 
             </div>;
         }
 
@@ -413,6 +449,7 @@ const Admin = () => {
         getTheaterOccupancy();
         displayTheaterOccupancy();
     }
+
     return (
         <section className="admin-page">
             <h1 className="title">Admin Page</h1>
@@ -430,10 +467,27 @@ const Admin = () => {
                 <option value="Theater">Theater</option>
             </select>
             {displayFields()}
-            <p1> {displayMessage()} </p1>
+            <p1> {displayMessage(errorMessage, confirmMessage)} </p1>
             <h1> Configure seating capacity for each theater in a multiplex </h1>
-            <Button className="button-style" type="button-primary" onClick={null}> Configure Seating </Button>
-            
+            <div className="input-container">
+                        <input
+                            type="text"
+                            required placeholder="Theater ID"
+                            value={seatingTheaterID}
+                            onChange={(e) => setSeatingTheaterID(e.target.value)}
+                        />
+                        <br></br>
+                        <input
+                            type="text"
+                            required placeholder="Seating Capacity"
+                            value={newSeatingCapacity}
+                            onChange={(e) => setNewSeatingCapacity(e.target.value)}
+                        />
+            </div>
+            <p1> {displayMessage(seatingErrorMessage, seatingConfirmMessage)} </p1>
+            <br></br>
+            <Button className="button-style" type="button-primary" onClick={updateSeatingCapacity}> Configure Seating </Button>
+
             <h1 className="title"> Analytics Dashboard</h1>
             <div className="analytics-row">
                 <div className="info-container">
