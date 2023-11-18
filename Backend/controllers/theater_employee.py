@@ -299,7 +299,6 @@ def update_theater_seatings(theater_id, *args, **kwargs):
 
     return jsonify({"message": "Theater Seating Updation Successfull"})
 
-
 #Adds a new discount
 #Expects in body: "percentage" (int) (0-100), "day" (int) (0-6, optional), "start_hour" (int) (0-24, optional), "end_hour" (int) (0-24, optional), 
 # "start_date" (str) (ISO 8601 datetime format, optional), "end_date" (str) (ISO 8601 datetime format, optional)

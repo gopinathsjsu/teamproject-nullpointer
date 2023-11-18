@@ -86,7 +86,7 @@ const Admin = () => {
                         <br></br>
                         <input
                             type="text"
-                            required placeholder="Movie ID (remove)"
+                            required placeholder="Movie ID (remove, update)"
                             value={movieID}
                             onChange={(e) => setMovieID(e.target.value)}
                         />
@@ -156,7 +156,7 @@ const Admin = () => {
         }
     }
 
-    /* MOVIE API CALLS */
+    /*  ******* SCHEDULE API CALLS ******** */
     // ADD MOVIE
     const insertMovie = () => {
         setErrorMessage("");
@@ -193,7 +193,42 @@ const Admin = () => {
         defaultFields();
     }
 
-    // REMOVE MOVIE
+    // UPDATE MOVIE
+    const updateMovie = () => {
+        setErrorMessage("");
+        setConfirmMessage("");
+        const data = {
+            title: newMovieName,
+            image: "null",
+        }
+        
+        if(movieID === "" || newMovieName === "") {
+            //console.log("Error: empty movie name");
+            setErrorMessage("Error: empty movie ID");
+            return;
+        }
+
+        fetch(`${host}/api/theater_employee/update_movie/${movieID}`, {
+          method: "PATCH",
+          headers: { 
+            "Content-Type": "application/json",
+            'x-access-token': localStorage.getItem('x-access-token'),
+          },
+          body: JSON.stringify(data)
+        })
+          .then((resp) => {
+            setConfirmMessage("Movie updated successfully");
+            resp.json()
+          })
+          .catch((error) => {
+            //console.log("Error: ", error);
+            setErrorMessage("Error: Input syntax");
+          });
+
+        defaultFields();
+    }
+
+    // REMOVE MOVIE 
     const removeMovie = () => {
         setErrorMessage("");
         setConfirmMessage("");
@@ -380,7 +415,7 @@ const Admin = () => {
         defaultFields();
     }
 
-    /* SEATING CAPACITY API CALLS */
+    /* ******** SEATING CAPACITY API CALLS ******** */
     const updateSeatingCapacity = () => {
         setSeatingErrorMessage('');
         setSeatingConfirmMessage('');
@@ -408,7 +443,7 @@ const Admin = () => {
         });
     }
 
-    /* ANALYTICS API CALLS */
+    /* ******** ANALYTICS API CALLS ********* */
     // View theater occupancy for the last 30/60/90 days
     const getTheaterOccupancy = () => {
         fetch(`${host}/api/theater/${analyticTheaterID}/occupancy?${JSON.stringify(viewOption)}`, {
@@ -457,7 +492,7 @@ const Admin = () => {
             <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? insertMovie : 
                                                                             scheduleOption === "Showtime" ? insertShowtime :
                                                                             scheduleOption === "Theater" ? insertTheater : null}> Add </Button>
-            <Button className="button-style" type="button-primary" onClick={null}> Update </Button>
+            <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? updateMovie : null}> Update </Button>
             <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? removeMovie :
                                                                             scheduleOption === "Showtime" ? removeShowtime : 
                                                                             scheduleOption === "Theater" ? removeTheater : null}> Remove </Button>
