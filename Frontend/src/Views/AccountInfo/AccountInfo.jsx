@@ -3,6 +3,7 @@ import React, {useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { host } from "../../env";
 import { useSelector } from 'react-redux';
+import Button from '../../Components/Button/Button';
 
 
 const AccountInfo = () => {
@@ -16,8 +17,8 @@ const AccountInfo = () => {
     const [upcomingMovies, setUpcomingMovies] = useState([]);
 
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-
+    //const [error, setError] = useState("");
+    
     const getData = (apiPath, container) => {
         const fetchData = async () => {
             fetch(`${host}/api/${apiPath}`, {
@@ -29,6 +30,11 @@ const AccountInfo = () => {
             })
             .then((resp) => resp.json())
             .then((data) => {
+                if(data.message) {
+                    container([]);
+                    return;
+                }
+
                 var formattedMovies = [];
                 if(apiPath === "recent_movies") {
                     formattedMovies = data.map(entry => ({
@@ -38,16 +44,14 @@ const AccountInfo = () => {
                     }));
                 }
                 else if(apiPath === "future_user_tickets") {
-                    console.log("future");
-                    console.log(JSON.stringify(data));
                     formattedMovies = data.map(entry => ({
                         movieName: entry.showtime.movie.title,
                         showDate: entry.showtime.show_date,
                         theaterID: entry.showtime.theater_id,
+                        ticketID: entry._id
                     }));
                 }
                 else if(apiPath === "prev_user_tickets") {
-                    console.log(JSON.stringify(data));
                     formattedMovies = data.map(entry => ({
                         movieName: entry.showtime.movie.title,
                         showDate: entry.showtime.show_date,
@@ -57,14 +61,35 @@ const AccountInfo = () => {
                 container(formattedMovies);
             }, []
         ).catch((error) => {
-            console.log(error);
+            container([]);
+            //console.log(error);
             //setError(JSON.stringify(error));
-            setError("No tickets found");
         });}
 
         fetchData();
         setIsLoading(false);
     };
+
+    function refund(ticketID) {
+        fetch(`${host}/api/user_ticket/${ticketID}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              'x-access-token': localStorage.getItem('x-access-token'),
+            },
+          })
+          .then((resp) => {
+            if(resp.status !== 404) {
+                console.log("Movie removed successfully");
+                getData("future_user_tickets", setUpcomingMovies);
+            }
+          })
+          .catch((error) => {
+            console.log("Error:", error);
+          });
+        
+        console.log("REFUND: ", ticketID);
+    }
 
     useEffect(() => {
         getData("recent_movies", setMovies);
@@ -77,15 +102,19 @@ const AccountInfo = () => {
         if(isLoading) {
             return <div> Loading...</div>;
         }
-        else if(error) {
-            return <div> {error} </div>
-        }
+        // else if(error) {
+        //     return <div> {error} </div>
+        // }
         else {
             return <div>
                     <h1>Tickets List</h1>
                     {container.map((movie, index) => (
                         <div key={index}>
-                            <p>Movie {index + 1}</p>
+                            <p>{container === upcomingMovies ? 
+                                    <Button className="button-style" type="button-primary" onClick={() => refund(movie.ticketID)}> Refund </Button>
+                                : ""}
+                                Movie {index + 1} 
+                            </p>
                             <p>Movie Name: {movie.movieName}</p>
                             <p>Show Date: {movie.showDate}</p>
                             <p>Theater ID: {movie.theaterID}</p>
