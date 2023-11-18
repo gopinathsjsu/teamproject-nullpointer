@@ -11,7 +11,7 @@ import { setSelectedTheaterInfo, setSelectedLocationInfo } from '../../Redux/das
 import './Navbar.scss';
 import { setDashboard } from "../../Redux/dashboardReducer";
 import { host } from '../../env';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const { user, dashboard } = useSelector((state) => state);
@@ -22,6 +22,7 @@ const Navbar = () => {
   const [ dropdownCicked, setDropdownClicked ] = useState(false);
   const dispatch = useDispatch();
   const path = useLocation().pathname;
+  const navigate = useNavigate();
 
   const getData = () =>{
     fetch(`${host}/api/all_locations`)
@@ -70,6 +71,15 @@ const Navbar = () => {
     window.location.href = '/';
   };
 
+  const handleBuyMembership = () => {
+    navigate('/payment', {state: {
+      type:'membership',
+      id: '1',
+      itemName: `Membership`,
+      itemCost: 15,
+    }});
+  }
+
   return(
     <div className="navbar-container">
       <div className='left-content'>
@@ -98,7 +108,7 @@ const Navbar = () => {
         }
         {
           user?.id && !user?.isMember && (
-          <a href="/payment" className="link">
+          <a onClick={handleBuyMembership} className="link">
             Buy Membership
           </a>
           )
