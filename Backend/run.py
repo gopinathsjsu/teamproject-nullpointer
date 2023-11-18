@@ -8,7 +8,6 @@ from flask_bcrypt import Bcrypt
 from datetime import datetime
 
 # import blueprints of endpoints grouped by resource
-from controllers.home import home
 from controllers.resource import resource
 from controllers.theater_employee import theater_employee
 
@@ -21,7 +20,6 @@ from util.helper import clean_obj, decode_token, generate_token, fetch_user_deta
 app = AppInitializer.get_instance(__name__).get_flask_app()
 
 # register all blueprints with Flask app
-app.register_blueprint(home)
 app.register_blueprint(resource)
 app.register_blueprint(theater_employee)
 
