@@ -473,11 +473,10 @@ const Admin = () => {
         else {
             // note: use occupancy data here
             return <div>
-                test 
+                <p>Total Occupancy: {occupancyData.total_potential}</p>
+                <p>Total used: {occupancyData.total_used}</p>
             </div>;
         }
-
-        defaultFields();
     }
 
     function handleAnalyticsUpdate() {
