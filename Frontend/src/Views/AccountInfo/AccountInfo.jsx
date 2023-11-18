@@ -28,14 +28,32 @@ const AccountInfo = () => {
                 },
             })
             .then((resp) => resp.json())
-            .then((data) => {        
-                const formattedMovies = data.map((entry) => ({
-                    movieName: entry.movie.movie_name,
-                    user: entry.movie.user,
-                    createdDate: entry.movie.created,
-                    showDate: entry.show_date,
-                    theaterID: entry.theater_id,
-                }));
+            .then((data) => {
+                var formattedMovies = [];
+                if(apiPath === "recent_movies") {
+                    formattedMovies = data.map(entry => ({
+                        movieName: entry.movie.title,
+                        showDate: entry.show_date,
+                        theaterID: entry.theater_id,
+                    }));
+                }
+                else if(apiPath === "future_user_tickets") {
+                    console.log("future");
+                    console.log(JSON.stringify(data));
+                    formattedMovies = data.map(entry => ({
+                        movieName: entry.showtime.movie.title,
+                        showDate: entry.showtime.show_date,
+                        theaterID: entry.showtime.theater_id,
+                    }));
+                }
+                else if(apiPath === "prev_user_tickets") {
+                    console.log(JSON.stringify(data));
+                    formattedMovies = data.map(entry => ({
+                        movieName: entry.showtime.movie.title,
+                        showDate: entry.showtime.show_date,
+                        theaterID: entry.showtime.theater_id,
+                    }));
+                }
                 container(formattedMovies);
             }, []
         ).catch((error) => {
