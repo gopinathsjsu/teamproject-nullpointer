@@ -461,11 +461,94 @@ def buy_tickets(*args, **kwargs):
                 }
             })
 
-    cmpe202_db_client.tickets.insert_one(ticket)
-
+    ticket_id = cmpe202_db_client.tickets.insert_one(ticket).inserted_id
+    ticket["_id"] = ticket_id
     clean_obj(ticket)
     return jsonify(ticket), 201
 
+@resource.route('/api/ticket/<ticket_id>/<showtime_id>', methods=["GET"])
+def get_ticket_details(ticket_id, showtime_id):
+    ticket_id =  ObjectId(ticket_id)
+    showtime_id = ObjectId(showtime_id)
+    ticket = list(cmpe202_db_client.tickets.aggregate([
+        {"$match": {"_id": ticket_id}},
+        {"$project": 
+            {
+                "_id": 1,
+                "ticket_count": 1,
+            }
+        }
+    ]))
+    clean_list(ticket)
+    movie = list(cmpe202_db_client.showtimes.aggregate([
+        {
+            "$match": { "_id":showtime_id }
+        },
+        {
+            "$lookup":{
+                "from": "movies",
+                "localField": "movie_id",
+                "foreignField": "_id",
+                "as": "movie",
+            }
+        },
+        {
+            "$lookup":{
+                "from": "theaters",
+                "localField": "theater_id",
+                "foreignField": "_id",
+                "as": "theater",
+            },
+        },
+        {
+            "$project":{
+                "_id": 1,
+                "show_date":1,
+                "theater" : {
+                    "id": "$theater._id",
+                    "name": "$theater.name",
+                },
+                "movie":{
+                    "id": "$movie._id",
+                    "title": "$movie.title",
+                    "image": "$movie.image",
+                }
+            },
+        }
+    ]))
+    location = list(cmpe202_db_client.theaters.aggregate([
+        {
+            "$match": {"_id": movie[0].get("theater")[0].get("id")[0]}
+        },
+        {
+            "$lookup":{
+                "from": "locations",
+                "localField": "location_id",
+                "foreignField": "_id",
+                "as": "location",
+            }
+        },
+        {
+            "$project": {
+                "name": "$location.name",
+            }
+        }
+    ]))
+    clean_obj(location[0])
+    ticket_info = {
+        "ticket":ticket[0],
+        'show_date': movie[0].get('show_date'),
+        "movie": {
+            'image': movie[0].get('movie')[0].get('image')[0],
+            'title': movie[0].get('movie')[0].get('title')[0],
+        },
+        'theater':{
+            'name': movie[0].get('theater')[0].get('name')[0],
+        },
+        "location":location[0],
+    }
+    print(ticket_info),
+    return jsonify(ticket_info), 200
 
 #Returns the tickets registered for given user, if admin
 @resource.route('/api/user_tickets/<check_user_id>', methods=['GET'])

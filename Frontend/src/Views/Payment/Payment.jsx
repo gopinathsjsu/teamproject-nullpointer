@@ -3,7 +3,7 @@ import Button from '../../Components/Button/Button';
 import Input from '../../Components/Input/Input';
 
 import './Payment.scss';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { host } from '../../env';
 import { useDispatch, useSelector } from 'react-redux';
 import userReducer from '../../Redux/userReducer';
@@ -17,16 +17,40 @@ const Payment = () =>{
   const [loading, setLoading] = useState(false);
   const { user } = useSelector((state) => state);
   const dispatch = useDispatch();
+  const [redeemPoints, setRedeemPoints] = useState(0);
+  const [ticketPrice, setTicketPrice] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const [cardNumber, setCardNumber] = useState(0);
   const [cardName, setCardName] = useState('');
   const [cardSecurity, setCardSecurity] = useState(0);
   const [cardExpiry, setExpiry] = useState('');
 
+  useEffect(() => {
+    if(user?.id){
+      const convenienceFee = user?.isMember ? 0 : 1.5;
+      setTicketPrice(paymentItem?.itemCost * numTickets + convenienceFee);
+    }
+  },[numTickets, user]);
+
+  useEffect(() => {
+    if(user?.id){
+      if(ticketPrice < user?.points){
+        setRedeemPoints(ticketPrice);
+      } else
+        setRedeemPoints(user?.points);
+    }
+  },[user, ticketPrice]);
+
+  useEffect(() => {
+    console.warn('2222', ticketPrice - redeemPoints)
+    setTotal(ticketPrice - redeemPoints);
+  },[ticketPrice, redeemPoints]);
+
   const handleInputChange = (e) => {
     switch(e?.target?.name){
-      case 'ticket':
-        setNumtickets(e?.target?.value);
+      case 'tickets':
+        setNumtickets(Number(e?.target?.value));
         break;
       case 'number':
         setCardNumber(e?.target?.value);
@@ -54,7 +78,7 @@ const Payment = () =>{
       },
       body:JSON.stringify({
         user_id: user?.id,
-        ticket_count: numTickets,
+        ticket_count: Number(numTickets),
         showtime_id: paymentItem?.id, 
       })
     }).then(async (response) => {
@@ -64,8 +88,8 @@ const Payment = () =>{
       throw new Error(error?.message);
     })
     .then(_ => {
-      setSuccess("Ticket booked successfully, navigating to home");
-      setTimeout(() => navigate('/'), 2000);
+      setSuccess("Ticket booked successfully, navigating to ticket");
+      setTimeout(() => navigate(`/ticket/${_?._id}/${_?.showtime_id}`), 2000);
     }).catch(error => {
       setError(error?.message);
       setLoading(false);
@@ -137,7 +161,7 @@ const Payment = () =>{
                 {paymentItem.itemName}
               </p>
               <p>
-                {paymentItem.itemCost}
+                +{paymentItem.itemCost}
               </p>
             </div>
             {
@@ -157,7 +181,19 @@ const Payment = () =>{
                     Non-member fee
                   </p>
                   <p>
-                    1.5
+                    +1.5
+                  </p>                
+                </div>  
+              )
+            }
+            {
+              paymentItem.type === "movie" && user?.points && (
+                <div className="payments-item">
+                  <p>
+                    Reward points
+                  </p>
+                  <p>
+                    {-redeemPoints.toFixed(2)}
                   </p>                
                 </div>  
               )
@@ -170,7 +206,7 @@ const Payment = () =>{
           </p>
           <p>
             {
-              paymentItem.itemCost * numTickets + (!user?.isMember && paymentItem.type === 'movie' ? 1.5:0)
+              parseFloat(total).toFixed(2)
             }
           </p>
         </div>

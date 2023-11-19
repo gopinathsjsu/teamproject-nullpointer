@@ -1,6 +1,6 @@
 import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { login } from "./Redux/userReducer";
 import Dashboard from './Views/Dashboard/Dashboard';
@@ -14,6 +14,8 @@ import Admin from './Views/Admin/Admin';
 import { host } from './env';
 
 import './Styles/index.scss'
+import Ticket from './Views/Ticket/Ticket';
+import Loader from './Components/Loader/Loader';
 
 const router = (user) => createBrowserRouter([
   {
@@ -43,6 +45,10 @@ const router = (user) => createBrowserRouter([
   {
     path: '/admin',
     element: user?.is_admin? navBarWrapper(<Admin />) : <Navigate to="/" />,
+  },
+  {
+    path: '/ticket/:ticketId/:showtimeId',
+    element: navBarWrapper(<Ticket />),
   }
 ]);
 
@@ -54,6 +60,7 @@ const navBarWrapper = (element) => (
 )
 
 const App = () => {
+  const[ loading, setLoading ] = useState(true);
   const { user } = useSelector((state) => state);
   const dispatch = useDispatch();
 
@@ -68,12 +75,16 @@ const App = () => {
       }).then((resp) => resp.json())
       .then((data) => {
         dispatch((login(data.user_data)));
+        setLoading(false);
       })
   }, []);
 
   return (
     <>
-      <RouterProvider router={router(user)} />
+    {
+      loading?
+      <Loader /> : <RouterProvider router={router(user)} />
+    }
     </>
   );
 }
