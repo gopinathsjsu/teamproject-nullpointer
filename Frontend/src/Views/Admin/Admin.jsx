@@ -471,6 +471,9 @@ const Admin = () => {
             </div>
         }
         else {
+            if(occupancyData === null) {
+                return
+            }
             // note: use occupancy data here
             return <div>
                 <p>Total Occupancy: {occupancyData.total_potential}</p>
