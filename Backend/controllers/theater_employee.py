@@ -24,14 +24,19 @@ cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collectio
 def insert_movie(*args, **kwargs):
     data = request.get_json()
 
+    name = ""
     if "movie_name" in data:
         name = data["movie_name"]
     elif "title" in data:
         name = data["title"]
 
+    image = ""
+    if "movie_name" in data:
+        image = data["image"]
+
     movie_data = {
         "title": name,
-        "image": data["image"],
+        "image": image,
         "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
