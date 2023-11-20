@@ -14,20 +14,6 @@ cmpe202_db_client = DBServiceInitializer.get_db_instance(
 logger = AppLogger.getInstance(__name__).getLogger()
 
 
-@resource.route('/api/get_movie_showtimes', methods=['GET'])
-@check_auth(roles=[])
-def fetch_movie_showtimes():
-
-    rec = cmpe202_db_client.dummy.find_one({})
-
-    dummy = {
-        "id": str(rec["_id"]),
-        "message": rec["message"]
-    }
-    logger.info("Testing dummy {0}".format(dummy))
-
-    return jsonify(dummy)
-
 
 @resource.route('/api/login_old', methods=['POST'])
 def login_old():
