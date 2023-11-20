@@ -460,13 +460,6 @@ def insert_showtimes(*args, **kwargs):
 @theater_employee.route('/api/theater_employee/get_showtimes', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_showtimes(*args, **kwargs):
-    showtimes = list(cmpe202_db_client.showtimes.find({
-        "$or": [
-            {"deleted": {"$exists": False}},
-            {"deleted": False}
-        ]
-    }))
-
     showtimes = list(cmpe202_db_client.showtimes.aggregate(
         [
             {"$addFields": {
