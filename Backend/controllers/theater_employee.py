@@ -11,14 +11,15 @@ from util.helper import check_auth, clean_obj, clean_list, jsdate_to_datetime
 
 theater_employee = Blueprint('theater_employee', __name__)
 logger = AppLogger.getInstance(__name__).getLogger()
-cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collection_instance(app_config.db_name)
+cmpe202_db_client = DBServiceInitializer.get_db_instance(
+    __name__).get_collection_instance(app_config.db_name)
 
 
-#TODO: Check for valid input
-#TODO: Fix delete routes to cascade, so deleting a movie refunds all tickets for that movie and so on
+# TODO: Check for valid input
+# TODO: Fix delete routes to cascade, so deleting a movie refunds all tickets for that movie and so on
 
 
-#Expects in body: "image" (str), "title" (str) or "movie_name" (str)
+# Expects in body: "image" (str), "title" (str) or "movie_name" (str)
 @theater_employee.route('/api/theater_employee/insert_movie', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_movie(*args, **kwargs):
@@ -56,14 +57,14 @@ def get_movies(*args, **kwargs):
             {"deleted": False}
         ]
     }))
-        
+
     clean_list(movies)
 
     return jsonify(movies)
 
 
-#Expects in body: "title" (str) (opt), "image" (str) (opt)
-#Can do either or both together
+# Expects in body: "title" (str) (opt), "image" (str) (opt)
+# Can do either or both together
 @theater_employee.route('/api/theater_employee/update_movie/<movie_id>', methods=['PATCH'])
 @check_auth(roles=["Admin"])
 def update_movie(movie_id, *args, **kwargs):
@@ -73,13 +74,13 @@ def update_movie(movie_id, *args, **kwargs):
 
     if "title" in data:
         update_data["title"] = data["title"]
-    
+
     if "image" in data:
         update_data["image"] = data["image"]
 
     cmpe202_db_client.movies.update_one(
         {"_id": ObjectId(movie_id)}, {"$set": update_data})
-    
+
     logger.info("Movie : ID ({0})".format(movie_id))
 
     return jsonify({"message": "Movie Update Successfull"})
@@ -91,13 +92,13 @@ def delete_movie(movie_id, *args, **kwargs):
 
     cmpe202_db_client.movies.update_one(
         {'_id': ObjectId(movie_id)}, {"$set": {"deleted": True}})
-    
+
     logger.info("Movie Deleted : ID ({0})".format(str(movie_id)))
 
     return jsonify({"message": "Movie Deletion Successfull"})
 
 
-#Expects in body: "location" (str)
+# Expects in body: "location" (str)
 @theater_employee.route('/api/theater_employee/insert_location', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_location(*args, **kwargs):
@@ -108,7 +109,8 @@ def insert_location(*args, **kwargs):
         "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
-    location_id = cmpe202_db_client.locations.insert_one(location_data).inserted_id
+    location_id = cmpe202_db_client.locations.insert_one(
+        location_data).inserted_id
 
     logger.info("New Location Inserted : ID ({0})".format(str(location_id)))
 
@@ -129,7 +131,7 @@ def get_locations(*args, **kwargs):
     return jsonify(locations)
 
 
-#Expects in body: "name" (str)
+# Expects in body: "name" (str)
 @theater_employee.route('/api/theater_employee/update_location/<location_id>', methods=['PATCH'])
 @check_auth(roles=["Admin"])
 def update_location(location_id, *args, **kwargs):
@@ -154,7 +156,7 @@ def delete_location(location_id, *args, **kwargs):
 
     cmpe202_db_client.locations.update_one(
         {'_id': ObjectId(location_id)}, {"$set": {"deleted": True}})
-    
+
     logger.info("Location Deleted : ID ({0})".format(str(location_id)))
 
     return jsonify({"message": "Location Deletion Successfull"})
@@ -189,7 +191,7 @@ def delete_location(location_id, *args, **kwargs):
 #             {"deleted": False}
 #         ]
 #     })
-        
+
 #     for rec in multiplexes_cursor:
 #         clean_obj(rec)
 #         response.append(rec)
@@ -203,13 +205,13 @@ def delete_location(location_id, *args, **kwargs):
 
 #     cmpe202_db_client.multiplexes.update_one(
 #         {'_id': ObjectId(multiplex_id)}, {"$set": {"deleted": True}})
-    
+
 #     logger.info("Multiplex Deleted : ID ({0})".format(str(multiplex_id)))
 
 #     return jsonify({"message": "Multiplex Deletion Successfull"})
 
 
-#Expects in body: "name" (str), "location_id" (str), "seating capacity" (int)
+# Expects in body: "name" (str), "location_id" (str), "seating capacity" (int)
 @theater_employee.route('/api/theater_employee/insert_theater', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_theater(*args, **kwargs):
@@ -222,7 +224,8 @@ def insert_theater(*args, **kwargs):
         "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
-    theater_id = cmpe202_db_client.theaters.insert_one(theater_data).inserted_id
+    theater_id = cmpe202_db_client.theaters.insert_one(
+        theater_data).inserted_id
 
     logger.info("New Theater Inserted : ID ({0})".format(str(theater_id)))
 
@@ -238,12 +241,12 @@ def get_theaters(*args, **kwargs):
             {"deleted": False}
         ]
     }))
-        
+
     clean_list(theaters)
     return jsonify(theaters)
 
 
-#Expects in body: "name" (str) (opt) or "seating_capacity" (int) (opt)
+# Expects in body: "name" (str) (opt) or "seating_capacity" (int) (opt)
 @theater_employee.route('/api/theater_employee/update_theater/<theater_id>', methods=['PATCH'])
 @check_auth(roles=["Admin"])
 def update_theater(theater_id, *args, **kwargs):
@@ -276,13 +279,13 @@ def delete_theater(theater_id, *args, **kwargs):
 
     cmpe202_db_client.theaters.update_one(
         {'_id': ObjectId(theater_id)}, {"$set": {"deleted": True}})
-    
+
     logger.info("Theater Deleted : ID ({0})".format(str(theater_id)))
 
     return jsonify({"message": "Theater Deletion Successfull"})
 
 
-#Expects in body: "seating_capacity" (int)
+# Expects in body: "seating_capacity" (int)
 @theater_employee.route('/api/theater_employee/update_theater_seatings/<theater_id>', methods=['PUT'])
 @check_auth(roles=["Admin"])
 def update_theater_seatings(theater_id, *args, **kwargs):
@@ -299,10 +302,12 @@ def update_theater_seatings(theater_id, *args, **kwargs):
 
     return jsonify({"message": "Theater Seating Updation Successfull"})
 
-#Adds a new discount
-#Expects in body: "percentage" (int) (0-100), "day" (int) (0-6, optional), "start_hour" (int) (0-24, optional), "end_hour" (int) (0-24, optional), 
+# Adds a new discount
+# Expects in body: "percentage" (int) (0-100), "day" (int) (0-6, optional), "start_hour" (int) (0-24, optional), "end_hour" (int) (0-24, optional),
 # "start_date" (str) (ISO 8601 datetime format, optional), "end_date" (str) (ISO 8601 datetime format, optional)
-#Can do discount by day, time, or combined. No start date means starts immediately, no end date means end in 365 days
+# Can do discount by day, time, or combined. No start date means starts immediately, no end date means end in 365 days
+
+
 @theater_employee.route('/api/theater_employee/insert_discount', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_discount(*args, **kwargs):
@@ -330,16 +335,18 @@ def insert_discount(*args, **kwargs):
     if "end_date" in data:
         discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
     else:
-        discount_data["end_date"] = datetime.datetime.utcnow() + datetime.timedelta(days=365)
+        discount_data["end_date"] = datetime.datetime.utcnow() + \
+            datetime.timedelta(days=365)
 
-    discount_id = cmpe202_db_client.discounts.insert_one(discount_data).inserted_id
+    discount_id = cmpe202_db_client.discounts.insert_one(
+        discount_data).inserted_id
 
     logger.info("New discount Inserted : ID ({0})".format(str(discount_id)))
 
     return jsonify({"discount_id": str(discount_id)})
 
 
-#Returns all discounts
+# Returns all discounts
 @theater_employee.route('/api/theater_employee/get_discounts', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_discounts(*args, **kwargs):
@@ -349,15 +356,15 @@ def get_discounts(*args, **kwargs):
             {"deleted": False}
         ]
     }))
-        
+
     clean_list(discounts)
     return jsonify(discounts)
 
 
-#Adds a new discount
-#Expects in body: "percentage" (int) (0-100, opt), "day" (int) (0-6, opt), "start_hour" (int) (0-24, opt), "end_hour" (int) (0-24, opt), 
+# Adds a new discount
+# Expects in body: "percentage" (int) (0-100, opt), "day" (int) (0-6, opt), "start_hour" (int) (0-24, opt), "end_hour" (int) (0-24, opt),
 # "start_date" (str) (ISO 8601 datetime format, opt), "end_date" (str) (ISO 8601 datetime format, opt)
-#Can do discount by day, time, or combined. No start date means starts immediately, no end date means end in 365 days
+# Can do discount by day, time, or combined. No start date means starts immediately, no end date means end in 365 days
 @theater_employee.route('/api/theater_employee/update_discount/<discount_id>', methods=['PATCH'])
 @check_auth(roles=["Admin"])
 def update_discount(discount_id, *args, **kwargs):
@@ -384,29 +391,29 @@ def update_discount(discount_id, *args, **kwargs):
         discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
 
     cmpe202_db_client.discounts.update_one(
-            {"_id": ObjectId(discount_id)},
-            {"$set": discount_data}
-        )
+        {"_id": ObjectId(discount_id)},
+        {"$set": discount_data}
+    )
 
     logger.info("discount : ID ({0})".format(discount_id))
 
     return jsonify({"message": "discount Update Successfull"})
 
 
-#Soft deletes a given discount
+# Soft deletes a given discount
 @theater_employee.route('/api/theater_employee/delete_discount/<discount_id>', methods=['DELETE'])
 @check_auth(roles=["Admin"])
 def delete_discount(discount_id, *args, **kwargs):
 
     cmpe202_db_client.discounts.update_one(
         {'_id': ObjectId(discount_id)}, {"$set": {"deleted": True}})
-    
+
     logger.info("discount Deleted : ID ({0})".format(str(discount_id)))
 
     return jsonify({"message": "discount Deletion Successfull"})
 
 
-#Expects in body: "theater_id" (str), "movie_id" (str), "show_date" (str) (ISO 8601 datetime format)
+# Expects in body: "theater_id" (str), "movie_id" (str), "show_date" (str) (ISO 8601 datetime format)
 @theater_employee.route('/api/theater_employee/insert_showtime', methods=['POST'])
 @check_auth(roles=["Admin"])
 def insert_showtimes(*args, **kwargs):
@@ -419,7 +426,8 @@ def insert_showtimes(*args, **kwargs):
         "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
-    showtime_id = cmpe202_db_client.showtimes.insert_one(showtime_data).inserted_id
+    showtime_id = cmpe202_db_client.showtimes.insert_one(
+        showtime_data).inserted_id
 
     logger.info("New Showtime Inserted : ID ({0})".format(str(showtime_id)))
 
@@ -430,9 +438,9 @@ def insert_showtimes(*args, **kwargs):
     # showtime_ids = []
     # show_days = dict(data["show_days"])
     # for show_day_rec in show_days:
-    #     show_day_timestamp = datetime.datetime.strptime(show_day_rec["show_day_timestamp"], "%d%b%Y%H%M%S") 
+    #     show_day_timestamp = datetime.datetime.strptime(show_day_rec["show_day_timestamp"], "%d%b%Y%H%M%S")
     #     show_day = calendar.day_name[show_day_timestamp.weekday()]
-    #     for show_time in show_day_rec["show_times"]: 
+    #     for show_time in show_day_rec["show_times"]:
     #         showtime_data = {
     #             "theater_id": ObjectId(data["theater_id"]),
     #             "movie_id": data["movie_id"],
@@ -460,27 +468,29 @@ def get_showtimes(*args, **kwargs):
             {"deleted": False}
         ]
     }))
-        
+
     clean_list(showtimes)
     return jsonify(showtimes)
 
-#Expects in body: "show_date" (str) (ISO 8601 datetime format)
+# Expects in body: "show_date" (str) (ISO 8601 datetime format)
+
+
 @theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PATCH'])
 @check_auth(roles=["Admin"])
 def update_showtime(showtime_id, *args, **kwargs):
     data = request.get_json()
 
-    if("show_date" in data):
+    if ("show_date" in data):
         cmpe202_db_client.showtimes.update_one(
             {"_id": ObjectId(showtime_id)},
             {"$set": {
                 "show_date": jsdate_to_datetime(data["show_date"])
             }}
         )
-    
+
     return jsonify({"message": "Showtime Update Successful"})
-    
-    
+
+
 # @theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PUT'])
 # @check_auth(roles=["Admin"])
 # def update_showtime(showtime_id, *args, **kwargs):
@@ -504,7 +514,7 @@ def delete_showtime(showtime_id, *args, **kwargs):
 
     cmpe202_db_client.showtimes.update_one(
         {'_id': ObjectId(showtime_id)}, {"$set": {"deleted": True}})
-    
+
     logger.info("Showtime Deleted : ID ({0})".format(str(showtime_id)))
 
     return jsonify({"message": "Showtime Deletion Successfull"})
@@ -517,10 +527,10 @@ def delete_showtime(showtime_id, *args, **kwargs):
 
 #     if theater_id is None:
 #         return abort(make_response(jsonify(error="Theater ID not provided"), 400))
-    
+
 #     if start_date is None:
 #         return abort(make_response(jsonify(error="Start Date not provided"), 400))
-    
+
 #     theater_summary_cursor = cmpe202_db_client.showtimes.find({
 #         "theater_id": ObjectId(theater_id),
 #         "created": {"$gte": start_date}
