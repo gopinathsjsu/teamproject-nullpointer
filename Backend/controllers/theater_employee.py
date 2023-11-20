@@ -104,8 +104,10 @@ def delete_movie(movie_id, *args, **kwargs):
 def insert_location(*args, **kwargs):
     data = request.get_json()
 
+    location_name = data["location"] if "location" in data else ""
+
     location_data = {
-        "name": data["location"],
+        "name": location_name,
         "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
@@ -128,6 +130,7 @@ def get_locations(*args, **kwargs):
     }))
 
     clean_list(locations)
+
     return jsonify(locations)
 
 
@@ -136,13 +139,16 @@ def get_locations(*args, **kwargs):
 @check_auth(roles=["Admin"])
 def update_location(location_id, *args, **kwargs):
     data = request.get_json()
+    
+    update_data = {}
+
+    if "name" in data:
+        update_data["name"] = data["name"]
 
     if "name" in data:
         cmpe202_db_client.locations.update_one(
             {"_id": ObjectId(location_id)},
-            {"$set": {
-                "name": data["name"]
-            }}
+            {"$set": update_data}
         )
 
     logger.info("location : ID ({0})".format(location_id))
@@ -217,10 +223,25 @@ def delete_location(location_id, *args, **kwargs):
 def insert_theater(*args, **kwargs):
     data = request.get_json()
 
+    if "name" in data:
+        theater_name = data["name"]
+    else:
+        return abort(make_response(jsonify(error=f"Please Provide Theater Name"), 400))
+
+    if "location_id" in data:
+        location_id = ObjectId(data["location_id"])
+    else:
+        return abort(make_response(jsonify(error=f"Please Provide Location Id"), 400))
+
+    if "seating_capacity" in data:
+        seating_capacity = data["seating_capacity"]
+    else:
+        return abort(make_response(jsonify(error=f"Please Provide Seating Capacity"), 400))
+      
     theater_data = {
-        "name": data["name"],
-        "location_id": ObjectId(data["location_id"]),
-        "seating_capacity": data["seating_capacity"],
+        "name": theater_name,
+        "location_id": location_id,
+        "seating_capacity": seating_capacity,
         "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
@@ -288,10 +309,15 @@ def delete_theater(theater_id, *args, **kwargs):
 def update_theater_seatings(theater_id, *args, **kwargs):
     data = request.get_json()
 
+    if "seating_capacity" in data:
+        seating_capacity = data["seating_capacity"]
+    else:
+        return abort(make_response(jsonify(error=f"Please Provide Seating Capacity"), 400))
+    
     cmpe202_db_client.theaters.update_one(
         {"_id": ObjectId(theater_id)},
         {"$set": {
-            "seating_capacity": data["seating_capacity"]
+            "seating_capacity": seating_capacity
         }}
     )
 
@@ -416,11 +442,27 @@ def delete_discount(discount_id, *args, **kwargs):
 def insert_showtimes(*args, **kwargs):
     data = request.get_json()
 
+    if "theater_id" in data:
+        theater_id = ObjectId(data["theater_id"])
+    else:
+        return abort(make_response(jsonify(error=f"Please Provide Theater Id"), 400))
+    
+    if "movie_id" in data:
+        movie_id = ObjectId(data["movie_id"])
+    else:
+        return abort(make_response(jsonify(error=f"Please Provide Movie Id"), 400))
+    
+    if "show_date" in data:
+        show_date = jsdate_to_datetime(data["show_date"])
+        show_day = calendar.day_name[jsdate_to_datetime(show_date).weekday()],
+    else:
+        return abort(make_response(jsonify(error=f"Please Provide Show Date"), 400))
+    
     showtime_data = {
-        "theater_id": ObjectId(data["theater_id"]),
-        "movie_id": ObjectId(data["movie_id"]),
-        "show_date": jsdate_to_datetime(data["show_date"]),
-        "show_day": calendar.day_name[jsdate_to_datetime(data["show_date"]).weekday()],
+        "theater_id": theater_id,
+        "movie_id": movie_id,
+        "show_date": show_date,
+        "show_day": show_day,
         "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
