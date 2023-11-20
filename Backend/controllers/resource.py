@@ -1,11 +1,13 @@
 from bson.objectid import ObjectId
+from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 
 import config.app_config as app_config
 from util.db_initializer import DBServiceInitializer
 from util.app_logger import AppLogger
+from util.common import get_active_price
 from util.helper import check_auth, set_token_vars, clean_list, clean_obj
-from datetime import datetime, timedelta
+
 
 
 resource = Blueprint('resource', __name__)
@@ -127,64 +129,6 @@ def get_remaining_seats(showtime_id):
     used_seats = tmp[0]["sum"] if tmp else 0
 
     return theater_seats - used_seats
-
-
-# Calculates the price of a showtime based on active discounts
-def get_active_price(showtime_id):
-    try:
-        show_date = cmpe202_db_client.showtimes.find_one({
-            "_id": showtime_id,
-            "$or": [
-                {"deleted": {"$exists": False}},
-                {"deleted": False}
-            ]
-        })["show_date"]
-    except (Exception):
-        return jsonify({"message": "Bad showtime ID"}), 400
-
-    # Probably a better way to get just the sum value out of this
-    tmp = list(cmpe202_db_client.discounts.aggregate([{
-        "$match": {
-            "$and": [
-                {"$or": [
-                    {"deleted": {"$exists": False}},
-                    {"deleted": False}
-                ]},
-                {"start_date": {
-                    "$lte": show_date
-                }},
-                {"end_date": {
-                    "$gte": show_date
-                }},
-                {"$or": [
-                    {"day": {"$exists": False}},
-                    {"day": show_date.weekday()}
-                ]},
-                {"$or": [
-                    {"start_hour": {"$exists": False}},
-                    {"start_hour": {
-                        "$lte": show_date.time().hour}
-                     }
-                ]},
-                {"$or": [
-                    {"end_hour": {"$exists": False}},
-                    {"end_hour": {
-                        "$gte": show_date.time().hour}
-                     }
-                ]}
-            ]
-        }},
-        {"$group": {
-            "_id": "null",
-            "sum": {"$sum": "$percentage"}
-        }}]))
-    discount = tmp[0]["sum"] if tmp else 0
-    if discount > 100:
-        discount = 100
-
-    price = 20.0
-
-    return price - (price * discount / 100) if discount else price
 
 
 # Returns total_potential and total_used seats per theater over past days
