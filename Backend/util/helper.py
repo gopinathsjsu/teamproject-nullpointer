@@ -10,7 +10,8 @@ from util.db_initializer import DBServiceInitializer
 
 
 logger = AppLogger.getInstance(__name__).getLogger()
-cmpe202_db_client = DBServiceInitializer.get_db_instance(__name__).get_collection_instance(app_config.db_name)
+cmpe202_db_client = DBServiceInitializer.get_db_instance(
+    __name__).get_collection_instance(app_config.db_name)
 
 
 def fetch_user_details(username):
@@ -45,14 +46,16 @@ def generate_token(user_record):
         # "isAdmin": user_record["isAdmin"],
         "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7)
     }
-    token = jwt.encode(payload=data_to_encode, key=app_config.SECRET_KEY, algorithm='HS256')
+    token = jwt.encode(payload=data_to_encode,
+                       key=app_config.SECRET_KEY, algorithm='HS256')
 
     return token
 
 
 def decode_token(token):
     user_data = {}
-    decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
+    decoded_token_obj = jwt.decode(
+        token, key=app_config.SECRET_KEY, algorithms=['HS256'])
     try:
         user_id = decoded_token_obj["user_id"]
         rec = cmpe202_db_client.users.find_one(
@@ -62,14 +65,15 @@ def decode_token(token):
                     {"deleted": {"$exists": False}},
                     {"deleted": False}
                 ]
-            }, 
+            },
             {"password": 0}
         )
 
         if "vip_until" in rec:
-            rec["isMember"] = True if rec["vip_until"] >= datetime.datetime.utcnow() else False
-    
-        if "isAdmin" not in rec:    #POST_PURGE remove
+            rec["isMember"] = True if rec["vip_until"] >= datetime.datetime.utcnow(
+            ) else False
+
+        if "isAdmin" not in rec:  # POST_PURGE remove
             rec["isAdmin"] = rec["is_admin"]
 
         user_data = dict(user_data, **rec)
@@ -90,15 +94,15 @@ def check_auth(roles=[]):
                 token = request.headers['x-access-token']
             except KeyError:
                 logger.error(f"Token is missing")
-                return abort(make_response(jsonify({"message": "Token is missing"}), 403))  
-            
+                return abort(make_response(jsonify({"message": "Token is missing"}), 403))
+
             try:
                 # decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
                 # user_id = decoded_token_obj["user_id"]
                 # user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
                 user_data = decode_token(token)
-                
+
                 kwargs["user_id"] = user_data["_id"] if "_id" in user_data else ""
                 kwargs["user"] = user_data["username"] if "username" in user_data else ""
                 kwargs["is_member"] = user_data["isMember"] if "isMember" in user_data else ""
@@ -111,7 +115,7 @@ def check_auth(roles=[]):
             except KeyError:
                 logger.error(f"Token is invalid")
                 return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
-            
+
             if not authorized_cond:
                 return abort(make_response(jsonify({"message": "User not Authorised"}), 401))
             return f(*args, **kwargs)
@@ -128,7 +132,7 @@ def clean_obj(obj):
             obj[key] = obj[key].isoformat()
 
 
-#Cleans the whole list, including changing datetime objects to ISO 8601 strings and removing metadata
+# Cleans the whole list, including changing datetime objects to ISO 8601 strings and removing metadata
 def clean_list(obj):
     keys_to_remove = []
     for k in obj:
@@ -149,7 +153,7 @@ def clean_list(obj):
         del obj[k]
 
 
-#To set the token variables without requiring it
+# To set the token variables without requiring it
 def set_token_vars():
     def auth_wrapper_func(f):
         @wraps(f)
@@ -158,7 +162,7 @@ def set_token_vars():
                 token = request.headers['x-access-token']
             except KeyError:
                 return f(*args, **kwargs)
-            
+
             try:
                 user_data = decode_token(token)
 
@@ -175,16 +179,16 @@ def set_token_vars():
     return auth_wrapper_func
 
 
-#Registers given user 
+# Registers given user
 def register_user(user):
     # check if username does not exist in database
     userExists = cmpe202_db_client.users.find_one({
         "username": user["username"],
         "$or": [
-                {"deleted": {"$exists": False}},
-                {"deleted": False}
-            ]
-        })
+            {"deleted": {"$exists": False}},
+            {"deleted": False}
+        ]
+    })
     if userExists:
         return jsonify({"message": "Username already taken"}), 409
 
@@ -192,7 +196,7 @@ def register_user(user):
     return jsonify({"message": "Successful"}), 201
 
 
-#Converts javascript date ISO to python datetime
+# Converts javascript date ISO to python datetime
 def jsdate_to_datetime(js_date):
     if js_date.endswith('Z'):
         return datetime.datetime.fromisoformat(js_date[:-1])
