@@ -17,10 +17,11 @@ def fetch_user_details(username):
     rec = cmpe202_db_client.users.find_one({
         "username": username,
         "$or": [
-                    {"deleted": {"$exists": False}},
-                    {"deleted": False}
+            {"deleted": {"$exists": False}},
+            {"deleted": False}
         ]
-        })
+    })
+
     return rec
 
 
@@ -54,17 +55,20 @@ def decode_token(token):
     decoded_token_obj = jwt.decode(token, key=app_config.SECRET_KEY, algorithms=['HS256'])
     try:
         user_id = decoded_token_obj["user_id"]
-        rec = cmpe202_db_client.users.find_one({
-            "_id": ObjectId(user_id),
-            "$or": [
+        rec = cmpe202_db_client.users.find_one(
+            {
+                "_id": ObjectId(user_id),
+                "$or": [
                     {"deleted": {"$exists": False}},
                     {"deleted": False}
-            ]
+                ]
             }, 
             {"password": 0}
-            )
+        )
 
-        rec["isMember"] = rec["vip_until"] >= datetime.datetime.utcnow()
+        if "vip_until" in rec:
+            rec["isMember"] = True if rec["vip_until"] >= datetime.datetime.utcnow() else False
+    
         if "isAdmin" not in rec:    #POST_PURGE remove
             rec["isAdmin"] = rec["is_admin"]
 
@@ -94,11 +98,11 @@ def check_auth(roles=[]):
                 # user_data = cmpe202_db_client.users.find_one({"_id": ObjectId(user_id)})
 
                 user_data = decode_token(token)
-
-                kwargs["user_id"] = user_data["_id"]
-                kwargs["user"] = user_data["username"]
-                kwargs["is_member"] = user_data["isMember"]
-                kwargs["points"] = user_data["points"]
+                
+                kwargs["user_id"] = user_data["_id"] if "_id" in user_data else ""
+                kwargs["user"] = user_data["username"] if "username" in user_data else ""
+                kwargs["is_member"] = user_data["isMember"] if "isMember" in user_data else ""
+                kwargs["points"] = user_data["points"] if "points" in user_data else ""
 
                 if "Admin" in roles and "isAdmin" in user_data and user_data["isAdmin"]:
                     authorized_cond = True
@@ -158,10 +162,11 @@ def set_token_vars():
             try:
                 user_data = decode_token(token)
 
-                kwargs["user_id"] = user_data["_id"]
-                kwargs["user"] = user_data["username"]
-                kwargs["is_member"] = user_data["isMember"]
-                kwargs["points"] = user_data["points"]
+                kwargs["user_id"] = user_data["_id"] if "_id" in user_data else ""
+                kwargs["user"] = user_data["username"] if "username" in user_data else ""
+                kwargs["is_member"] = user_data["isMember"] if "isMember" in user_data else ""
+                kwargs["points"] = user_data["points"] if "points" in user_data else ""
+
             except Exception as e:
                 logger.error(f"Token is invalid")
                 return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
@@ -176,9 +181,9 @@ def register_user(user):
     userExists = cmpe202_db_client.users.find_one({
         "username": user["username"],
         "$or": [
-                    {"deleted": {"$exists": False}},
-                    {"deleted": False}
-        ]
+                {"deleted": {"$exists": False}},
+                {"deleted": False}
+            ]
         })
     if userExists:
         return jsonify({"message": "Username already taken"}), 409
