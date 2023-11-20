@@ -252,25 +252,22 @@ def get_theaters(*args, **kwargs):
 def update_theater(theater_id, *args, **kwargs):
     data = request.get_json()
 
+    update_data = {}
+
     if "name" in data:
-        cmpe202_db_client.theaters.update_one(
-            {"_id": ObjectId(theater_id)},
-            {"$set": {
-                "name": data["name"]
-            }}
-        )
+        update_data["name"] = data["name"]
 
     if "seating_capacity" in data:
-        cmpe202_db_client.theaters.update_one(
-            {"_id": ObjectId(theater_id)},
-            {"$set": {
-                "seating_capacity": data["seating_capacity"]
-            }}
-        )
+        update_data["seating_capacity"] = data["seating_capacity"]
 
-    logger.info("theater : ID ({0})".format(theater_id))
+    cmpe202_db_client.theaters.update_one(
+        {"_id": ObjectId(theater_id)},
+        {"$set": update_data}
+    )
 
-    return jsonify({"message": "theater Update Successfull"})
+    logger.info("Updated metadata of Theater : ID ({0})".format(theater_id))
+
+    return jsonify({"message": "Theater Update Successfull"})
 
 
 @theater_employee.route('/api/theater_employee/delete_theater/<theater_id>', methods=['DELETE'])
