@@ -477,32 +477,19 @@ def get_showtimes(*args, **kwargs):
 def update_showtime(showtime_id, *args, **kwargs):
     data = request.get_json()
 
-    if ("show_date" in data):
-        cmpe202_db_client.showtimes.update_one(
-            {"_id": ObjectId(showtime_id)},
-            {"$set": {
-                "show_date": jsdate_to_datetime(data["show_date"])
-            }}
-        )
+    update_data = {}
+
+    if "show_date" in data:
+        update_data["show_date"] = jsdate_to_datetime(data["show_date"])
+
+    cmpe202_db_client.showtimes.update_one(
+        {"_id": ObjectId(showtime_id)},
+        {"$set": update_data}
+    )
+
+    logger.info("Showtime Updated : ID ({0})".format(str(showtime_id)))
 
     return jsonify({"message": "Showtime Update Successful"})
-
-
-# @theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PUT'])
-# @check_auth(roles=["Admin"])
-# def update_showtime(showtime_id, *args, **kwargs):
-#     data = request.get_json()
-
-#     cmpe202_db_client.showtimes.update_one(
-#         {"_id": ObjectId(showtime_id)},
-#         {"$set": {
-#             "discount_criteria": data["discount_criteria"]
-#         }}
-#     )
-
-#     logger.info("Showtime discount_criteria Updated : ID ({0})".format(str(showtime_id)))
-
-#     return jsonify({"message": "Showtime discount_criteria Updation Successfull"})
 
 
 @theater_employee.route('/api/theater_employee/delete_showtime/<showtime_id>', methods=['DELETE'])
