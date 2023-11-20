@@ -14,7 +14,8 @@ const Admin = () => {
     // Movie Inputs
     const [movieName, setMovieName] = useState('');
     const [newMovieName, setNewMovieName] = useState('');
-    
+    const [imageURL, setImageURL] = useState('');
+
     // showtime inputs
     const [theaterID, setTheaterID] = useState('');
     const [movieID, setMovieID] = useState('');
@@ -46,6 +47,7 @@ const Admin = () => {
         setTheaterName('');
         setTheaterLocationID('');
         setSeatCapacity('');
+        setImageURL('');
     }
 
     //theater CRUD inputs
@@ -75,6 +77,13 @@ const Admin = () => {
                             required placeholder="movie name"
                             value={movieName}
                             onChange={(e) => setMovieName(e.target.value)}
+                        />
+                        <br></br>
+                        <input
+                            type="text"
+                            required placeholder="Movie Image URL (add, update)"
+                            value={imageURL}
+                            onChange={(e) => setImageURL(e.target.value)}
                         />
                         <br></br>
                         <input
@@ -163,12 +172,17 @@ const Admin = () => {
         setConfirmMessage("");
         const data = {
             movie_name: movieName,
-            image: "null",
+            image: imageURL,
         }
         
         if(movieName === "") {
             //console.log("Error: empty movie name");
             setErrorMessage("Error: empty movie name");
+            return;
+        }
+
+        if(imageURL === "") {
+            setErrorMessage("Error: no image URL");
             return;
         }
 
@@ -197,15 +211,34 @@ const Admin = () => {
     const updateMovie = () => {
         setErrorMessage("");
         setConfirmMessage("");
-        const data = {
-            title: newMovieName,
-            image: "null",
-        }
         
-        if(movieID === "" || newMovieName === "") {
+        if(movieID === "") {
             //console.log("Error: empty movie name");
             setErrorMessage("Error: empty movie ID");
             return;
+        }
+        
+        if(imageURL === "" && newMovieName === "") {
+            setErrorMessage("Error: Add an image url or new movie name to update")
+            return;
+        }
+
+        var data = {};
+        if (imageURL !== "" && newMovieName !== "") {
+            data = {
+                title: newMovieName,
+                image: imageURL,
+            };
+        } 
+        else if (imageURL !== "") {
+            data = {
+                image: imageURL,
+            };
+        } 
+        else if (newMovieName !== "") {
+            data = {
+                title: newMovieName,
+            };
         }
 
         fetch(`${host}/api/theater_employee/update_movie/${movieID}`, {
