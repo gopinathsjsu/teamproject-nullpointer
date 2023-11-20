@@ -31,18 +31,18 @@ DBServiceInitializer.get_db_instance(__name__)
 # Initializing Logger
 logger = AppLogger.getInstance(__name__).getLogger()
 
-#Initilizing hasher
+# Initilizing hasher
 hasher = Bcrypt(app)
 
 
 @app.route('/api/login', methods=['POST'])
 def get_access_key():
-    username = request.form.get("username", None) 
+    username = request.form.get("username", None)
     password = request.form.get("password", None)
-    
+
     if username is None or password is None:
         return abort(make_response(jsonify(error=f"Please provide Username or Password."), 400))
-    
+
     user_record = fetch_user_details(username)
 
     try:
@@ -59,11 +59,11 @@ def get_access_key():
     #     clean_obj(user_record)
     #     del user_record["password"]
     #     return jsonify({"access_token": access_token, "user_data": user_record})
-    
+
     return abort(make_response(jsonify(error=f"Incorrect Username or Password."), 400))
 
 
-#Putting this in here to better match login
+# Putting this in here to better match login
 @app.route('/api/create_account', methods=['POST'])
 def register():
     val = request.get_json()
@@ -73,7 +73,7 @@ def register():
 
     if not username or not password:
         return jsonify({"message": "Missing username or password"}), 400
-    
+
     hashed_password = hasher.generate_password_hash(password).decode('utf-8')
 
     user = {
@@ -87,7 +87,7 @@ def register():
     return register_user(user)
 
 
-#To create a new admin account, only admins can create new admins
+# To create a new admin account, only admins can create new admins
 @app.route('/api/create_account_admin', methods=['POST'])
 @check_auth(roles=["Admin"])
 def register_admin(*args, **kwargs):
@@ -98,7 +98,7 @@ def register_admin(*args, **kwargs):
 
     if not username or not password:
         return jsonify({"message": "Missing username or password"}), 400
-    
+
     hashed_password = hasher.generate_password_hash(password).decode('utf-8')
 
     user = {
@@ -118,25 +118,25 @@ def decode_access_token():
 
     if access_token is None:
         return abort(make_response(jsonify(error=f"Please provide x-access-token in headers"), 400))
-    
+
     try:
         user_data = decode_token(access_token)
         clean_obj(user_data)
         return jsonify({"user_data": user_data})
     except Exception as e:
         logger.error(f"Token is invalid cannot be decoded")
-    
+
     return abort(make_response(jsonify(error=f"Token is invalid cannot be decoded"), 401))
 
 
-#TODO: remove once db is stable
-#Creates a default admin account, here for easy automation
+# TODO: remove once db is stable
+# Creates a default admin account, here for easy automation
 @app.route('/api/create_account_admin_default', methods=['POST'])
 def register_admin_default():
 
     username = "Admin"
     password = "Password"
-    
+
     hashed_password = hasher.generate_password_hash(password).decode('utf-8')
 
     user = {
