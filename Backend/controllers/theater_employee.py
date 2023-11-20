@@ -464,7 +464,23 @@ def get_showtimes(*args, **kwargs):
     clean_list(showtimes)
     return jsonify(showtimes)
 
+#Expects in body: "show_date" (str) (ISO 8601 datetime format)
+@theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PATCH'])
+@check_auth(roles=["Admin"])
+def update_showtime(showtime_id, *args, **kwargs):
+    data = request.get_json()
 
+    if("show_date" in data):
+        cmpe202_db_client.showtimes.update_one(
+            {"_id": ObjectId(showtime_id)},
+            {"$set": {
+                "show_date": jsdate_to_datetime(data["show_date"])
+            }}
+        )
+    
+    return jsonify({"message": "Showtime Update Successful"})
+    
+    
 # @theater_employee.route('/api/theater_employee/update_showtime/<showtime_id>', methods=['PUT'])
 # @check_auth(roles=["Admin"])
 # def update_showtime(showtime_id, *args, **kwargs):

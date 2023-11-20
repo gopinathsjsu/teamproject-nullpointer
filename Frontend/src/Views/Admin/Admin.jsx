@@ -117,7 +117,7 @@ const Admin = () => {
                         <br></br>
                         <input
                             type="text"
-                            required placeholder="Showtime ID (remove)"
+                            required placeholder="Showtime ID (remove, update)"
                             value={showtimeID}
                             onChange={(e) => setShowtimeID(e.target.value)}
                         />
@@ -148,7 +148,7 @@ const Admin = () => {
                         <br></br>
                         <input
                             type="text"
-                            required placeholder="Theater ID (remove)"
+                            required placeholder="Theater ID (remove, update)"
                             value={theaterID}
                             onChange={(e) => setTheaterID(e.target.value)}
                         />
@@ -303,6 +303,42 @@ const Admin = () => {
           defaultFields();
     }
 
+    // UPDATE SHOWTIME
+    const updateShowtime = () => {
+        setErrorMessage("");
+        setConfirmMessage("");
+        if(showDate === '') {
+            setErrorMessage("Error: show date is empty");
+            return;
+        }
+
+        if(showtimeID === '') {
+            setErrorMessage("Error: showtime ID is empty");
+            return;
+        }
+        const formattedDate = new Date(showDate);
+        
+        const data = {
+            show_date: formattedDate
+        }
+        
+        fetch(`${host}/api/theater_employee/update_showtime/${showtimeID}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              'x-access-token': localStorage.getItem('x-access-token'),
+            },
+            body: JSON.stringify(data)
+          })
+          .then((resp) => {
+            setConfirmMessage("Showtime updated successfully");
+            resp.json()
+          })
+          .catch((error) => {
+              setSeatingErrorMessage("Error: invalid syntax");
+          });
+    }
+
     // REMOVE SHOWTIME
     const removeShowtime = () => {
         setErrorMessage("");
@@ -346,7 +382,7 @@ const Admin = () => {
     }
 
     /* THEATER API CALLS */
-    // ADD THEATER #Expects in body: "name" (str), "location_id" (str), "seating capacity" (int)
+    // ADD THEATER
     const insertTheater = () => {
         setErrorMessage("");
         setConfirmMessage("");
@@ -386,7 +422,7 @@ const Admin = () => {
           defaultFields();
     }
 
-    // REMOVE THEATER /api/theater_employee/delete_theater/<theater_id>'
+    // REMOVE THEATER
     const removeTheater = () => {
         setErrorMessage("");
         setConfirmMessage("");
@@ -413,6 +449,47 @@ const Admin = () => {
         });
 
         defaultFields();
+    }
+
+    // UPDATE THEATER /api/theater_employee/update_theater/<theater_id>
+    //Expects in body: "name" (str) (opt) or "seating_capacity" (int) (opt)
+    const updateTheater = () => {
+        setErrorMessage("");
+        setConfirmMessage("");
+        
+        if(theaterName === '' || seatCapacity === '') {
+            setErrorMessage("Error: requires theater name or seat capacity input");
+            return;
+        }
+
+        if(theaterID === '') {
+            setErrorMessage("Error: theater ID is empty");
+            return;
+        }
+
+        const data = {
+            name: theaterName,
+            seating_capacity: seatCapacity
+        }
+         
+        fetch(`${host}/api/theater_employee/update_theater/${theaterID}`, {
+            method: "PATCH",
+            headers: { 
+              "Content-Type": "application/json",
+              'x-access-token': localStorage.getItem('x-access-token'),
+            },
+            body: JSON.stringify(data)
+          })
+            .then((resp) => {
+              setConfirmMessage("Theater updated successfully");
+              resp.json()
+            })
+            .catch((error) => {
+              //console.log("Error: ", error);
+              setErrorMessage("Error: Input syntax");
+            });
+  
+          defaultFields();
     }
 
     /* ******** SEATING CAPACITY API CALLS ******** */
@@ -494,7 +571,9 @@ const Admin = () => {
             <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? insertMovie : 
                                                                             scheduleOption === "Showtime" ? insertShowtime :
                                                                             scheduleOption === "Theater" ? insertTheater : null}> Add </Button>
-            <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? updateMovie : null}> Update </Button>
+            <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? updateMovie : 
+                                                                            scheduleOption === "Showtime" ? updateShowtime :
+                                                                            scheduleOption === "Theater" ? updateTheater : null}> Update </Button>
             <Button className="button-style" type="button-primary" onClick={scheduleOption === "Movies" ? removeMovie :
                                                                             scheduleOption === "Showtime" ? removeShowtime : 
                                                                             scheduleOption === "Theater" ? removeTheater : null}> Remove </Button>
@@ -547,9 +626,8 @@ const Admin = () => {
                         }
                     </h1>
     
-                    <div className="list-box">
+                    <div className="list-box" style={{ maxWidth: "100px", maxHeight: "100px"}}>
                         <p1> {displayTheaterOccupancy()} </p1>
-
                     </div>
                 </div>
             </div>
