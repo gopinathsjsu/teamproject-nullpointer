@@ -420,6 +420,7 @@ def insert_showtimes(*args, **kwargs):
         "theater_id": ObjectId(data["theater_id"]),
         "movie_id": ObjectId(data["movie_id"]),
         "show_date": jsdate_to_datetime(data["show_date"]),
+        "show_day": calendar.day_name[jsdate_to_datetime(data["show_date"]).weekday()],
         "added_date": datetime.datetime.utcnow(),
         "added_by": kwargs["user"]
     }
@@ -502,6 +503,29 @@ def delete_showtime(showtime_id, *args, **kwargs):
     logger.info("Showtime Deleted : ID ({0})".format(str(showtime_id)))
 
     return jsonify({"message": "Showtime Deletion Successfull"})
+
+
+@theater_employee.route('/api/theater_employee/get_showtimes_custom', methods=['GET'])
+@check_auth(roles=["Admin"])
+def get_showtimes_custom(*args, **kwargs):
+    showtimes_custom = list(cmpe202_db_client.showtimes.find({
+        "$and": {
+            [
+                {"$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+                ]},
+                {"$or": [
+                    {"deleted": {"$exists": False}},
+                    {"deleted": False}
+                ]}
+            ]
+        }
+    }))
+
+    clean_list(showtimes_custom)
+
+    return jsonify(showtimes_custom)
 
 
 # @theater_employee.route('/api/theater_employee/get_theater_summary', methods=['GET'])
