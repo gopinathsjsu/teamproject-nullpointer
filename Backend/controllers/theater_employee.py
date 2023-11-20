@@ -467,6 +467,22 @@ def get_showtimes(*args, **kwargs):
         ]
     }))
 
+    showtimes = list(cmpe202_db_client.showtimes.aggregate(
+        [
+            {"$addFields": {
+                "hour_of_day": {"$hour": "$show_date"}
+            }},
+            {"$match": {
+                "$and": [
+                    {"$or": [
+                        {"deleted": {"$exists": False}},
+                        {"deleted": False}
+                    ]}
+                ]
+            }}
+        ]
+    ))
+
     clean_list(showtimes)
     return jsonify(showtimes)
 
@@ -508,20 +524,25 @@ def delete_showtime(showtime_id, *args, **kwargs):
 @theater_employee.route('/api/theater_employee/get_showtimes_custom', methods=['GET'])
 @check_auth(roles=["Admin"])
 def get_showtimes_custom(*args, **kwargs):
-    showtimes_custom = list(cmpe202_db_client.showtimes.find({
-        "$and": {
-            [
-                {"$or": [
-                    {"deleted": {"$exists": False}},
-                    {"deleted": False}
-                ]},
-                {"$or": [
-                    {"deleted": {"$exists": False}},
-                    {"deleted": False}
-                ]}
-            ]
-        }
-    }))
+    showtimes_custom = list(cmpe202_db_client.showtimes.aggregate(
+        [
+            {"$addFields": {
+                "hour_of_day": {"$hour": "$show_date"}
+            }},
+            {"$match": {
+                "$and": [
+                    {"$or": [
+                        {"deleted": {"$exists": False}},
+                        {"deleted": False}
+                    ]},
+                    {"$or": [
+                        {"show_day": "Tuesday"},
+                        {"hour_of_day": {"$gte": 18}}
+                    ]}
+                ]
+            }}
+        ]
+    ))
 
     clean_list(showtimes_custom)
 
