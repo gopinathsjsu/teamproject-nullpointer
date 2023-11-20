@@ -64,22 +64,17 @@ def get_movies(*args, **kwargs):
 def update_movie(movie_id, *args, **kwargs):
     data = request.get_json()
 
+    update_data = {}
+
     if "title" in data:
-        cmpe202_db_client.movies.update_one(
-            {"_id": ObjectId(movie_id)},
-            {"$set": {
-                "title": data["title"]
-            }}
-        )
-
+        update_data["title"] = data["title"]
+    
     if "image" in data:
-        cmpe202_db_client.movies.update_one(
-            {"_id": ObjectId(movie_id)},
-            {"$set": {
-                "image": data["image"]
-            }}
-        )
+        update_data["image"] = data["image"]
 
+    cmpe202_db_client.movies.update_one(
+        {"_id": ObjectId(movie_id)}, {"$set": update_data})
+    
     logger.info("Movie : ID ({0})".format(movie_id))
 
     return jsonify({"message": "Movie Update Successfull"})
