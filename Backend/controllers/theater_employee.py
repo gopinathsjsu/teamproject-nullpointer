@@ -398,29 +398,32 @@ def update_discount(discount_id, *args, **kwargs):
     if "percentage" in data:
         discount_data["percentage"] = data["percentage"]
 
-    if "day" in data:
-        discount_data["day"] = data["day"]
+    discount_data["modified_date"] = datetime.datetime.utcnow()
+    discount_data["modified_by"] = kwargs["user"]
+    
+    # if "day" in data:
+    #     discount_data["day"] = data["day"]
 
-    if "start_hour" in data:
-        discount_data["start_hour"] = data["start_hour"]
+    # if "start_hour" in data:
+    #     discount_data["start_hour"] = data["start_hour"]
 
-    if "end_hour" in data:
-        discount_data["end_hour"] = data["end_hour"]
+    # if "end_hour" in data:
+    #     discount_data["end_hour"] = data["end_hour"]
 
-    if "start_date" in data:
-        discount_data["start_date"] = jsdate_to_datetime(data["start_date"])
+    # if "start_date" in data:
+    #     discount_data["start_date"] = jsdate_to_datetime(data["start_date"])
 
-    if "end_date" in data:
-        discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
+    # if "end_date" in data:
+    #     discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
 
     cmpe202_db_client.discounts.update_one(
         {"_id": ObjectId(discount_id)},
         {"$set": discount_data}
     )
 
-    logger.info("discount : ID ({0})".format(discount_id))
+    logger.info("Updated Discount : ID ({0})".format(discount_id))
 
-    return jsonify({"message": "discount Update Successfull"})
+    return jsonify({"message": "Discount Update Successfull"})
 
 
 # Soft deletes a given discount
@@ -464,12 +467,24 @@ def insert_showtimes(*args, **kwargs):
         "show_date": show_date,
         "show_day": show_day,
         "added_date": datetime.datetime.utcnow(),
-        "added_by": kwargs["user"]
+        "added_by": kwargs["user"],
+        "price": 20
     }
     showtime_id = cmpe202_db_client.showtimes.insert_one(
         showtime_data).inserted_id
 
     logger.info("New Showtime Inserted : ID ({0})".format(str(showtime_id)))
+
+    if show_day.upper() == "TUESDAY" or show_date.hour < 18:
+        discount_data = {
+            "showtime_id": showtime_id,
+            "added_date": datetime.datetime.utcnow(),
+            "added_by": kwargs["user"],
+            "percentage": 0
+        }
+        discount_id = cmpe202_db_client.discounts.insert_one(
+        discount_data).inserted_id
+        logger.info("New Discount Inserted : ID ({0})".format(str(discount_id)))
 
     return jsonify({"showtime_id": str(showtime_id)})
 
@@ -572,10 +587,19 @@ def get_showtimes_custom(*args, **kwargs):
                     ]},
                     {"$or": [
                         {"show_day": "Tuesday"},
-                        {"hour_of_day": {"$gte": 18}}
+                        {"hour_of_day": {"$lt": 18}}
                     ]}
                 ]
-            }}
+            }},
+            {"$lookup": {
+                "from": "discounts",
+                "localField": "_id",
+                "foreignField": "showtime_id",
+                "as": "discount_data",
+            }},
+            {"$unwind": "$discount_data"},
+            {"$addFields": {"discount_percentage": "$discount_data.percentage"}},
+            {"$project": {"discount_data": 0}}
         ]
     ))
 
