@@ -388,9 +388,9 @@ def update_theater_seatings(theater_id, *args, **kwargs):
 # Expects in body: "percentage" (int) (0-100, opt), "day" (int) (0-6, opt), "start_hour" (int) (0-24, opt), "end_hour" (int) (0-24, opt),
 # "start_date" (str) (ISO 8601 datetime format, opt), "end_date" (str) (ISO 8601 datetime format, opt)
 # Can do discount by day, time, or combined. No start date means starts immediately, no end date means end in 365 days
-@theater_employee.route('/api/theater_employee/update_discount/<discount_id>', methods=['PATCH'])
+@theater_employee.route('/api/theater_employee/update_discount/<showtime_id>', methods=['PATCH'])
 @check_auth(roles=["Admin"])
-def update_discount(discount_id, *args, **kwargs):
+def update_discount(showtime_id, *args, **kwargs):
     data = request.get_json()
 
     discount_data = {}
@@ -417,11 +417,11 @@ def update_discount(discount_id, *args, **kwargs):
     #     discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
 
     cmpe202_db_client.discounts.update_one(
-        {"_id": ObjectId(discount_id)},
+        {"showtime_id": ObjectId(showtime_id)},
         {"$set": discount_data}
     )
 
-    logger.info("Updated Discount : ID ({0})".format(discount_id))
+    logger.info("Updated Discount with Showtime : ID ({0})".format(showtime_id))
 
     return jsonify({"message": "Discount Update Successfull"})
 
