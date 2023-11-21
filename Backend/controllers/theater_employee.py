@@ -457,7 +457,7 @@ def insert_showtimes(*args, **kwargs):
     
     if "show_date" in data:
         show_date = jsdate_to_datetime(data["show_date"])
-        show_day = calendar.day_name[jsdate_to_datetime(show_date).weekday()],
+        show_day = calendar.day_name[jsdate_to_datetime(show_date).weekday()]
     else:
         return abort(make_response(jsonify(error=f"Please Provide Show Date"), 400))
     
@@ -547,12 +547,31 @@ def update_showtime(showtime_id, *args, **kwargs):
     update_data = {}
 
     if "show_date" in data:
-        update_data["show_date"] = jsdate_to_datetime(data["show_date"])
+        show_date = jsdate_to_datetime(data["show_date"])
+        show_day = calendar.day_name[jsdate_to_datetime(show_date).weekday()]
+    else:
+        return abort(make_response(jsonify(error=f"Please Provide Show Date"), 400))
 
     cmpe202_db_client.showtimes.update_one(
         {"_id": ObjectId(showtime_id)},
         {"$set": update_data}
     )
+
+    if show_day.upper() == "TUESDAY" or show_date.hour < 18:
+        count = cmpe202_db_client.discounts.count_documents({'showtime_id': ObjectId(showtime_id)})
+        if count == 0:
+            discount_data = {
+                "showtime_id": ObjectId(showtime_id),
+                "added_date": datetime.datetime.utcnow(),
+                "added_by": kwargs["user"],
+                "percentage": 0
+            }
+            discount_id = cmpe202_db_client.discounts.insert_one(
+            discount_data).inserted_id
+            logger.info("New Discount Inserted : ID ({0})".format(str(discount_id)))
+    else:
+        cmpe202_db_client.discounts.update_one(
+            {'showtime_id': ObjectId(showtime_id)}, {"$set": {"deleted": True}})
 
     logger.info("Showtime Updated : ID ({0})".format(str(showtime_id)))
 
