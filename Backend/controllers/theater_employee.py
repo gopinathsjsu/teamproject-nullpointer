@@ -331,57 +331,57 @@ def update_theater_seatings(theater_id, *args, **kwargs):
 # Can do discount by day, time, or combined. No start date means starts immediately, no end date means end in 365 days
 
 
-@theater_employee.route('/api/theater_employee/insert_discount', methods=['POST'])
-@check_auth(roles=["Admin"])
-def insert_discount(*args, **kwargs):
-    data = request.get_json()
+# @theater_employee.route('/api/theater_employee/insert_discount', methods=['POST'])
+# @check_auth(roles=["Admin"])
+# def insert_discount(*args, **kwargs):
+#     data = request.get_json()
 
-    discount_data = {
-        "percentage": data["percentage"],
-        "added_date": datetime.datetime.utcnow(),
-        "added_by": kwargs["user"]
-    }
-    if "day" in data:
-        discount_data["day"] = data["day"]
+#     discount_data = {
+#         "percentage": data["percentage"],
+#         "added_date": datetime.datetime.utcnow(),
+#         "added_by": kwargs["user"]
+#     }
+#     if "day" in data:
+#         discount_data["day"] = data["day"]
 
-    if "start_hour" in data:
-        discount_data["start_hour"] = data["start_hour"]
+#     if "start_hour" in data:
+#         discount_data["start_hour"] = data["start_hour"]
 
-    if "end_hour" in data:
-        discount_data["end_hour"] = data["end_hour"]
+#     if "end_hour" in data:
+#         discount_data["end_hour"] = data["end_hour"]
 
-    if "start_date" in data:
-        discount_data["start_date"] = jsdate_to_datetime(data["start_date"])
-    else:
-        discount_data["start_date"] = datetime.datetime.utcnow()
+#     if "start_date" in data:
+#         discount_data["start_date"] = jsdate_to_datetime(data["start_date"])
+#     else:
+#         discount_data["start_date"] = datetime.datetime.utcnow()
 
-    if "end_date" in data:
-        discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
-    else:
-        discount_data["end_date"] = datetime.datetime.utcnow() + \
-            datetime.timedelta(days=365)
+#     if "end_date" in data:
+#         discount_data["end_date"] = jsdate_to_datetime(data["end_date"])
+#     else:
+#         discount_data["end_date"] = datetime.datetime.utcnow() + \
+#             datetime.timedelta(days=365)
 
-    discount_id = cmpe202_db_client.discounts.insert_one(
-        discount_data).inserted_id
+#     discount_id = cmpe202_db_client.discounts.insert_one(
+#         discount_data).inserted_id
 
-    logger.info("New discount Inserted : ID ({0})".format(str(discount_id)))
+#     logger.info("New discount Inserted : ID ({0})".format(str(discount_id)))
 
-    return jsonify({"discount_id": str(discount_id)})
+#     return jsonify({"discount_id": str(discount_id)})
 
 
 # Returns all discounts
-@theater_employee.route('/api/theater_employee/get_discounts', methods=['GET'])
-@check_auth(roles=["Admin"])
-def get_discounts(*args, **kwargs):
-    discounts = list(cmpe202_db_client.discounts.find({
-        "$or": [
-            {"deleted": {"$exists": False}},
-            {"deleted": False}
-        ]
-    }))
+# @theater_employee.route('/api/theater_employee/get_discounts', methods=['GET'])
+# @check_auth(roles=["Admin"])
+# def get_discounts(*args, **kwargs):
+#     discounts = list(cmpe202_db_client.discounts.find({
+#         "$or": [
+#             {"deleted": {"$exists": False}},
+#             {"deleted": False}
+#         ]
+#     }))
 
-    clean_list(discounts)
-    return jsonify(discounts)
+#     clean_list(discounts)
+#     return jsonify(discounts)
 
 
 # Adds a new discount
@@ -558,7 +558,13 @@ def update_showtime(showtime_id, *args, **kwargs):
     )
 
     if show_day.upper() == "TUESDAY" or show_date.hour < 18:
-        count = cmpe202_db_client.discounts.count_documents({'showtime_id': ObjectId(showtime_id)})
+        count = cmpe202_db_client.discounts.count_documents({
+            'showtime_id': ObjectId(showtime_id),
+            "$or": [
+                {"deleted": {"$exists": False}},
+                {"deleted": False}
+            ]
+        })
         if count == 0:
             discount_data = {
                 "showtime_id": ObjectId(showtime_id),
