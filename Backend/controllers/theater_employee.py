@@ -625,8 +625,25 @@ def get_showtimes_custom(*args, **kwargs):
                 "foreignField": "showtime_id",
                 "as": "discount_data",
             }},
-            {"$unwind": "$discount_data"},
-            {"$addFields": {"discount_percentage": "$discount_data.percentage"}},
+            {"$unwind": {
+                "path": "$discount_data", "preserveNullAndEmptyArrays": True}
+            },
+            {"$addFields": {
+              "price": {
+                "$cond": {
+                  "if": {"$eq": [{"$ifNull": ["$price", None]}, None]},
+                  "then": int(20),
+                  "else": "$price"
+                }
+              },
+              "discount_percentage": {
+                "$cond": {
+                  "if": {"$eq": [{"$ifNull": ["$discount_data", None]}, None]},
+                  "then": int(0),
+                  "else": "$discount_data.percentage"
+                }
+              }
+            }},
             {"$project": {"discount_data": 0}}
         ]
     ))
