@@ -1,7 +1,8 @@
 import "../Admin/Admin.scss";
 import Button from '../../Components/Button/Button';
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import { host } from "../../env";
+import dayjs from "dayjs";
 
 const Admin = () => {
     const [scheduleOption, setScheduleOption] = useState('Movies');
@@ -36,6 +37,13 @@ const Admin = () => {
     // Analytics inputs
     const [analyticTheaterID, setAnalyticTheaterID] = useState('');
     const [occupancyData, setOccupancyData] = useState(null);
+
+    //Discounted Showtimes
+    const [discountShowtimes, setDiscountShowtimes] = useState([]);
+    const [selectedShowID, setSelectedShowID] = useState('');
+    const [discountPerc, setDiscountPerc] = useState();
+    const [discountSuccess, setDiscountSuccess] = useState('');
+    const [discountError, setDiscountError] = useState('');
 
     function defaultFields() {
         setMovieName('');
@@ -372,6 +380,32 @@ const Admin = () => {
           });
     }
 
+    const updateDiscount = () => {
+        setDiscountError("");
+        setDiscountSuccess("");
+        if(selectedShowID === ''){
+            setErrorMessage("Error: empty movie name");
+            return;
+        }
+        fetch(`${host}/api/theater_employee/update_discount/${selectedShowID}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              'x-access-token': localStorage.getItem('x-access-token'),
+            },
+            body: JSON.stringify({"showtime_id": selectedShowID, "percentage": Number(discountPerc)})
+          })
+          .then((resp) => {
+            setDiscountSuccess("Discount updated successfully");
+            resp.json().then(() => {
+                getDiscountApplicableShowtimes();
+            })
+          })
+          .catch((error) => {
+                setDiscountError("Error: invalid syntax");
+          });
+    }
+
     // REMOVE SHOWTIME
     const removeShowtime = () => {
         setErrorMessage("");
@@ -379,7 +413,7 @@ const Admin = () => {
         
         if(showtimeID === "") {
             //console.log("Error: empty movie name");
-            setErrorMessage("Error: empty movie name");
+            setErrorMessage("Error: empty showtime id");
             return;
         }
 
@@ -592,6 +626,23 @@ const Admin = () => {
         }
     }
 
+    const getDiscountApplicableShowtimes = () => {
+        fetch(`${host}/api/theater_employee/get_showtimes_custom`,
+        {
+            headers: {
+                "Content-Type": "application/json",
+                'x-access-token': localStorage.getItem('x-access-token'),
+            },
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            console.warn('111', data);
+            setDiscountShowtimes(data);
+        })
+    }
+    useEffect(() => {
+        getDiscountApplicableShowtimes();
+    }, [])
     function handleAnalyticsUpdate() {
         getTheaterOccupancy();
         displayTheaterOccupancy();
@@ -664,8 +715,35 @@ const Admin = () => {
                     </div>
                 </div>
             </div>
-            <h1> Configure discount prices for shows before 6pm and for Tuesday shows </h1>  
-            <Button className="button-style" type="button-primary" onClick={null}> Configure Discount Prices </Button>
+            <div className="info-container">
+                <h1> Configure discount prices for shows before 6pm and for Tuesday shows </h1> 
+                <input
+                    type="text"
+                    required placeholder="Show ID"
+                    value={selectedShowID}
+                    onChange={(e) => setSelectedShowID(e.target.value)}
+                />
+                <input
+                    type="number"
+                    required placeholder="Discount %"
+                    value={discountPerc}
+                    onChange={(e) => setDiscountPerc(e.target.value)}
+                />
+                <Button className="button-style" type="button-primary" onClick={updateDiscount}> Configure Discount Prices </Button>
+                <p1> {displayMessage(discountError, discountSuccess)} </p1>
+                <div className="list-box" style={{ maxWidth: "100px", maxHeight: "100px"}}>
+                    {
+                        discountShowtimes?.map(show => (
+                            <div className="show-container">
+                                <p>ShowID: {show?._id}</p>
+                                <p>ShowDate: {dayjs(show?.show_date).format('ddd MM/DD/YYYY hh:mm a')}</p>
+                                <p>Price: {show?.price}</p>
+                                <p>Discount %: {show?.discount_percentage}</p>
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
         </section>
 
     )

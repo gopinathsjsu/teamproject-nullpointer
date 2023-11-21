@@ -60,12 +60,13 @@ const navBarWrapper = (element) => (
 )
 
 const App = () => {
-  const[ loading, setLoading ] = useState(true);
+  const[ loading, setLoading ] = useState(false);
   const { user } = useSelector((state) => state);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if(!user?.id && localStorage.getItem('x-access-token'))
+    if(!user?.id && localStorage.getItem('x-access-token')){
+      setLoading(true);
       fetch(`${host}/api/user`, {
         method: "GET",
         headers: { 
@@ -77,6 +78,8 @@ const App = () => {
         dispatch((login(data.user_data)));
         setLoading(false);
       })
+    }else
+      setLoading(false);
   }, []);
 
   return (

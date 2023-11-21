@@ -107,7 +107,7 @@ const Navbar = () => {
           )
         }
         {
-          user?.id && !user?.isMember && (
+          user?.id && !user?.isMember && !user?.isAdmin && (
           <a onClick={handleBuyMembership} className="link">
             Buy Membership
           </a>
