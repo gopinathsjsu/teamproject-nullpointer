@@ -23,6 +23,9 @@ def fetch_user_details(username):
         ]
     })
 
+    if "isAdmin" not in rec:  # POST_PURGE remove
+            rec["isAdmin"] = rec["is_admin"]
+
     return rec
 
 
@@ -43,7 +46,7 @@ def generate_token(user_record):
         "user_id": str(user_record["_id"]),
         # "username": user_record["username"],
         # "isMember": user_record["isMember"],
-        # "isAdmin": user_record["isAdmin"],
+        "isAdmin": user_record["isAdmin"],
         "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7)
     }
     token = jwt.encode(payload=data_to_encode,
