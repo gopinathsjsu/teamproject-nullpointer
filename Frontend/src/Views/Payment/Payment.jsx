@@ -197,7 +197,7 @@ const Payment = () =>{
                             Reward points
                           </p>
                           <p>
-                            {-redeemPoints.toFixed(2)}
+                            {-redeemPoints?.toFixed(2)}
                           </p>                
                         </div>  
                       )
