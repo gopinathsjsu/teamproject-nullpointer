@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 import { login } from "./Redux/userReducer";
 import Dashboard from './Views/Dashboard/Dashboard';
@@ -44,7 +45,7 @@ const router = (user) => createBrowserRouter([
   },
   {
     path: '/admin',
-    element: user?.is_admin? navBarWrapper(<Admin />) : <Navigate to="/" />,
+    element: user?.isAdmin? navBarWrapper(<Admin />) : <Navigate to="/" />,
   },
   {
     path: '/ticket/:ticketId/:showtimeId',
@@ -61,9 +62,10 @@ const navBarWrapper = (element) => (
 
 const App = () => {
   const[ loading, setLoading ] = useState(false);
-  const { user } = useSelector((state) => state);
   const dispatch = useDispatch();
-
+  const { user } = useSelector((state) => state);
+  const userToken = localStorage.getItem('x-access-token')? jwtDecode(localStorage.getItem('x-access-token')) : '';
+  
   useEffect(() => {
     if(!user?.id && localStorage.getItem('x-access-token')){
       setLoading(true);
@@ -86,7 +88,7 @@ const App = () => {
     <>
     {
       loading?
-      <Loader /> : <RouterProvider router={router(user)} />
+      <Loader /> : <RouterProvider router={router(userToken)} />
     }
     </>
   );

@@ -15,8 +15,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const { user, dashboard } = useSelector((state) => state);
-  const [ locations, setLocations] = useState([]);
-  const [ theaters, setTheatres] = useState([]);
+  const [ locations, setLocations] = useState();
+  const [ theaters, setTheatres] = useState();
   const [ selectedLocation, setSelectedLocation ] = useState(locations?.[0] || {});
   const [ selectedTheater, setSelectedTheater ] = useState(theaters?.[0] || {});
   const [ dropdownCicked, setDropdownClicked ] = useState(false);
@@ -37,7 +37,7 @@ const Navbar = () => {
   }, [])
 
   useEffect(() => {
-    if(dashboard?.locations){ 
+    if(dashboard?.locations && !locations && !theaters){ 
       setLocations(dashboard?.locations);
       setTheatres(dashboard?.theaters);
       setSelectedLocation(dashboard?.locations?.[0])
@@ -62,6 +62,7 @@ const Navbar = () => {
 
   useEffect(() => {
     setTheatres(dashboard?.theaters?.filter((theater) => theater?.locationId === selectedLocation?.id));
+    console.warn('222', selectedLocation?.id, dashboard?.theaters?.filter((theater) => theater?.locationId === selectedLocation?.id));
     setSelectedTheater(dashboard?.theaters?.[0]);
     dispatch(setSelectedLocationInfo({...selectedLocation}));
   },[selectedLocation]);
@@ -104,6 +105,13 @@ const Navbar = () => {
               onChange={handleSetTheater}
             />
             </>
+          )
+        }
+        {
+          user?.id && user?.isAdmin && (
+            <a href="/admin" className="link">
+              Admin portal
+            </a>
           )
         }
         {

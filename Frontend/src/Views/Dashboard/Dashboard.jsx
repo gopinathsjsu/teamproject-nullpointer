@@ -12,9 +12,10 @@ const Dashboard = () => {
   const { selectedTheaterInfo } = useSelector((state) => state?.dashboard);
   const [currentlyShowing, setCurrentlyShowing] = useState([]);
   const [upcomingMovies, setUpcomingMovies] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const getCurrentMovies = () =>{
+    setLoading(true);
     fetch(`${host}/api/theater/${selectedTheaterInfo?.id}/movies`)
     .then((resp) => resp.json())
     .then((data) => {
