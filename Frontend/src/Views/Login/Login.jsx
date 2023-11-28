@@ -40,7 +40,7 @@ const Login = () => {
           localStorage.setItem("x-access-token", access_token);
           dispatch(login(user_data));
 
-          if(user_data.isAdmin) {
+          if(user_data.is_admin) {
             navigate("/admin");
           }
           else {

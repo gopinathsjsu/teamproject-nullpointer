@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 import { login } from "./Redux/userReducer";
 import Dashboard from './Views/Dashboard/Dashboard';
@@ -14,44 +15,60 @@ import Admin from './Views/Admin/Admin';
 import { host } from './env';
 
 import './Styles/index.scss'
+import Ticket from './Views/Ticket/Ticket';
+import Loader from './Components/Loader/Loader';
 
 const router = (user) => createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard />,
+    element: navBarWrapper(<Dashboard />),
   },
   {
     path: "/login",
-    element: <Login />,
+    element: navBarWrapper(<Login />),
   },
   {
     path: "/register",
-    element: <Register />
+    element: navBarWrapper(<Register />),
   },
   {
     path: "/account",
-    element: user?  <AccountInfo />: <Navigate to="/"/>,
+    element: user?  navBarWrapper(<AccountInfo />): <Navigate to="/"/>,
   },
   {
-    path: '/checkout',
-    element: <Checkout />
+    path: '/checkout/:id',
+    element: navBarWrapper(<Checkout />)
   },
   {
     path: '/payment',
-    element: <Payment />
+    element: navBarWrapper(<Payment />)
   },
   {
     path: '/admin',
-    element: user?.isAdmin? <Admin /> : <Navigate to="/" />,
+    element: user?.isAdmin? navBarWrapper(<Admin />) : <Navigate to="/" />,
+  },
+  {
+    path: '/ticket/:ticketId/:showtimeId',
+    element: navBarWrapper(<Ticket />),
   }
 ]);
 
-const App = () => {
-  const { user } = useSelector((state) => state);
-  const dispatch = useDispatch();
+const navBarWrapper = (element) => (
+  <>
+    <Navbar/>
+    {element}
+  </>
+)
 
+const App = () => {
+  const[ loading, setLoading ] = useState(false);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state);
+  const userToken = localStorage.getItem('x-access-token')? jwtDecode(localStorage.getItem('x-access-token')) : '';
+  
   useEffect(() => {
-    if(!user?.id && localStorage.getItem('x-access-token'))
+    if(!user?.id && localStorage.getItem('x-access-token')){
+      setLoading(true);
       fetch(`${host}/api/user`, {
         method: "GET",
         headers: { 
@@ -61,13 +78,18 @@ const App = () => {
       }).then((resp) => resp.json())
       .then((data) => {
         dispatch((login(data.user_data)));
+        setLoading(false);
       })
+    }else
+      setLoading(false);
   }, []);
 
   return (
     <>
-      <Navbar/>
-      <RouterProvider router={router(user)} />
+    {
+      loading?
+      <Loader /> : <RouterProvider router={router(userToken)} />
+    }
     </>
   );
 }

@@ -1,117 +1,93 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import dayjs from 'dayjs';
 
 import Button from '../../Components/Button/Button';
-import Oppenheimer from '../../assets/oppenheimer.png';
+import { host } from '../../env';
 
 import "./Checkout.scss";
+import Loader from '../../Components/Loader/Loader';
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { 
+    selectedLocationInfo, 
+    selectedTheaterInfo 
+  } = useSelector((state) => state?.dashboard);
+  const [showtimes, setShowtimes] = useState([]);
+  const [movieInfo, setMovieInfo] = useState({});
+  const[ loading, setLoading ] = useState(true);
 
-  const data = {
-    image: Oppenheimer,
-    location: {
-      id: 1,
-      location: "Milpitas",
-    },
-    theatre:{
-      id: 1,
-      maxSeatingCapacity: 40,
-    },
-    showings:[
-      {
-        id: 1,
-        day: 'Monday',
-        timings:[
-          {
-            id: 1,
-            show: '9:00 am - 12:00 pm',
-          },
-          {
-            id: 2,
-            show: '1:00 pm - 4:00 pm',
-          },
-          {
-            id: 3,
-            show: '5:00 am - 8:00 pm',
-          }
-        ]
-      },
-      {
-        id: 2,
-        day: 'Tuesday',
-        timings:[
-          {
-            id: 1,
-            show: '9:00 am - 12:00 pm',
-          },
-          {
-            id: 2,
-            show: '1:00 pm - 4:00 pm',
-          },
-          {
-            id: 3,
-            show: '5:00 am - 8:00 pm',
-          }
-        ]
-      },
-      {
-        id: 3,
-        day: 'Wednesday',
-        timings:[
-          {
-            id: 1,
-            show: '9:00 am - 12:00 pm',
-          },
-          {
-            id: 2,
-            show: '1:00 pm - 4:00 pm',
-          },
-          {
-            id: 3,
-            show: '5:00 am - 8:00 pm',
-          }
-        ]
-      }
-    ]
+  const getData = () =>{
+    fetch(`${host}/api/movie/${id}`)
+    .then((resp) => resp.json())
+    .then((data) => {
+      setShowtimes(data?.showtimes);
+      setMovieInfo({
+        id,
+        image: data?.image, 
+        title:data?.title
+      })
+      setLoading(false);
+    })
+  };
 
-  }
+  useEffect(() => {
+    getData();
+  },[])
 
-  const handleConfirm = () => {
-    navigate('/payment');
+  const handleConfirm = (show) => {
+    navigate('/payment', {state: {
+      type:'movie',
+      id: show?._id,
+      itemName: `Movie - ${movieInfo?.title}`,
+      itemCost: show?.price,
+    }});
   }
 
   return(
-    <div class="checkout-container">
-      <div class="movie-container">
-        <img className="movie-image" src={data.image} alt=''/>
-        <div class="movie">
-          <p class="movie-meta">
-            Theatre Location: {data.location.location}
-          </p>
-          <p class="movie-meta">
-            Max Seating: {data.theatre.maxSeatingCapacity}
-          </p>
-          <div class="showing-container">
-            {data.showings.map(show => (
-              <div class="show">
-                <p>
-                  {show.day}
+    <>
+      {
+        loading? 
+        <Loader />
+        : (
+          <div className="checkout-container">
+            <h1 className="header-text">
+                Book {movieInfo?.title}
+              </h1>
+            <div className="movie-container">
+              <img className="movie-image" src={movieInfo?.image} alt=''/>
+              <div className="movie">
+                <p className="movie-meta">
+                  Location: {selectedLocationInfo?.name}
                 </p>
-                {show.timings.map(time => (
-                  <>
-                  <p>
-                  {time.show}
-                  </p>
-                  <Button type="button-primary" className="book" onClick={handleConfirm}> Book </Button>
-                  </>
-                ))}
-              </div>
-            ))}
+                <p className="movie-meta">
+                  Theater: {selectedTheaterInfo?.name}
+                </p>
+                <p className="movie-meta">
+                  Max Seating: {selectedTheaterInfo?.seating_capacity}
+                </p>
+                <div className="showing-container">
+                  {showtimes?.map((show, index) => (
+                    <div className="show" key={index}>
+                      <p>
+                        {dayjs(show?.show_date).format("ddd, MM-DD-YYYY")}
+                      </p>
+                      <p>
+                      {dayjs(show?.show_date).format('hh:mm a')}
+                      </p>
+                      <Button type="button-primary" className="book" onClick={() => handleConfirm(show)}> Book </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>  
+            </div>
           </div>
-        </div>  
-      </div>
-    </div>
+        )
+      }
+    </>
   )
 };
 

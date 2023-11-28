@@ -1,83 +1,92 @@
 import Button from "../../Components/Button/Button";
+import Loader from "../../Components/Loader/Loader";
 import "./Dashboard.scss";
-import Oppenheimer from '../../assets/oppenheimer.png';
-import Spiderman from '../../assets/spiderman.png';
-import Elemental from '../../assets/elemental.png';
 import { host } from '../../env';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const { selectedTheaterInfo } = useSelector((state) => state?.dashboard);
+  const [currentlyShowing, setCurrentlyShowing] = useState([]);
+  const [upcomingMovies, setUpcomingMovies] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const getData = () =>{
-    fetch(`${host}/api/all_locations`)
+  const getCurrentMovies = () =>{
+    setLoading(true);
+    fetch(`${host}/api/theater/${selectedTheaterInfo?.id}/movies`)
     .then((resp) => resp.json())
     .then((data) => {
-      console.warn('111', data);
+      setLoading(false);
+      setCurrentlyShowing([...data]);
     })
-  };
+  }
+
+  const getUpcomingMovies = () => {
+    fetch(`${host}/api/upcoming_movies`)
+    .then((resp) => resp.json())
+    .then((data) => {
+      setUpcomingMovies([...data]);
+    })
+  }
 
   useEffect(() => {
-    getData();
-  }, [])
+    getUpcomingMovies();
+  }, []);
 
-  const movies = [
-    {
-      title: 'Oppenheimer',
-      image: Oppenheimer,
-    },
-    {
-      title: 'Spiderman',
-      image: Spiderman,
-    },
-    {
-      title: 'Elemental',
-      image: Elemental,
-    }
-  ]
+  useEffect(() => {
+    if(selectedTheaterInfo?.id)
+      getCurrentMovies();
+  }, [selectedTheaterInfo])
+    
 
-  const handleBook = () => {
-    navigate("/checkout");
+  const handleBook = (movie) => {
+    navigate("/checkout/"+movie?._id);
   }
   
   return (
-    <div className="dashboard-container">
-      <div className="showing-container">
-        <h1 className="header-text">
-          Currently Playing
-        </h1>
-        <div className="showing-grid">
-          {movies.map(movie => (
-            <div className="movie">
-              <img className="movie-image" src={movie.image} alt=''/>
-              <h3 className="movie-title">
-                {movie.title}
-              </h3>
-              <Button className="movie-book" onClick={handleBook} type={'button-primary'}>Book</Button>
+    <>
+    {
+      loading ? <Loader /> : 
+      (
+        <div className="dashboard-container">
+          <div className="showing-container">
+            <h1 className="header-text">
+              Currently Playing
+            </h1>
+            <div className="showing-grid">
+              {currentlyShowing?.map((movie, index) => (
+                <div className="movie" key={index}>
+                  <img className="movie-image" src={movie.image} alt=''/>
+                  <h3 className="movie-title">
+                    {movie.title}
+                  </h3>
+                  <Button className="movie-book" onClick={() => handleBook(movie)} type={'button-primary'}>Book</Button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="showing-container">
-        <h1 className="header-text">
-          Upcoming Movies
-        </h1>
-        <div className="showing-grid">
-          {movies.map(movie => (
-            <div className="movie">
-              <img className="movie-image" src={movie.image} alt=''/>
-              <h3 className="movie-title">
-                {movie.title}
-              </h3>
+          </div>
+          <div className="showing-container">
+            <h1 className="header-text">
+              Upcoming Movies
+            </h1>
+            <div className="showing-grid">
+              {upcomingMovies?.map((movie, index) => (
+                <div className="movie" key={index}>
+                  <img className="movie-image" src={movie.image} alt=''/>
+                  <h3 className="movie-title">
+                    {movie.title}
+                  </h3>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-    </div>
+      )
+    }
+    </>
   )
 };
 
