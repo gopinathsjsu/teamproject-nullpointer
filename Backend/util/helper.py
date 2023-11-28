@@ -181,7 +181,6 @@ def set_token_vars():
         return decorated_function
     return auth_wrapper_func
 
-
 # Registers given user
 def register_user(user):
     # check if username does not exist in database

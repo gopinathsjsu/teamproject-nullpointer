@@ -831,8 +831,7 @@ def get_showtimes_by_theater(theater_id):
 
     clean_list(showtimes)
     return jsonify(showtimes), 200
-
-
+  
 # Returns theater occupancy over past number of days
 # Expects in body: "past_days" (int) (opt, default 30)
 @resource.route('/api/theater/<theater_id>/occupancy', methods=['GET'])
