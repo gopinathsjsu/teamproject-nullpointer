@@ -36,6 +36,7 @@ const Admin = () => {
 
     // Analytics inputs
     const [analyticTheaterID, setAnalyticTheaterID] = useState('');
+
     const [occupancyData, setOccupancyData] = useState('30');
     const [summarizeOption, setSummarizeOption] = useState('Location');
 
@@ -720,6 +721,16 @@ const Admin = () => {
             <h1 className="title"> Analytics Dashboard</h1>
             <div className="analytics-row">
                 <div className="info-container">
+                    <div className="input-container">
+                        <input
+                            type="text"
+                            required placeholder="Theater ID"
+                            value={analyticTheaterID}
+                            onChange={(e) => setAnalyticTheaterID(e.target.value)}
+                        />
+                    </div>
+                    <br></br>
+                    <Button className="button-style" type="button-primary" onClick={handleAnalyticsUpdate}> Update Display </Button>
                     <h1> Viewing Theater Occupancy for the last: {            
                         <select className="drop-down" value={viewOption} onChange={updateViewOption}>
                             <option value="30">30 days</option>
