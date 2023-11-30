@@ -615,13 +615,15 @@ const Admin = () => {
     }
 
     function displayTheaterOccupancy() {
-        if(occupancyData === null) {
-            return
+        if (!occupancyData || !Array.isArray(occupancyData)) {
+            return <p>No occupancy data available.</p>;
         }
 
         //console.log("DATA:" + JSON.stringify(occupancyData) + " type: " + summarizeOption);
         //console.log(occupancyData.name);
-        if(summarizeOption === "Location") {
+        const isLocation = occupancyData.some(data => data.hasOwnProperty('name'));
+        const isMovie = occupancyData.some(data => data.hasOwnProperty('image'));
+        if(isLocation) {
             return (
                 <div>
                     {occupancyData.map((data) => (
@@ -635,7 +637,7 @@ const Admin = () => {
                 </div>
             );
         }
-        else if(summarizeOption === 'Movie') {
+        else if(isMovie) {
             return (
                 <div>
                     {occupancyData.map((data) => (
