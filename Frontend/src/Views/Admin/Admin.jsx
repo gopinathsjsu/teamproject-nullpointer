@@ -36,7 +36,8 @@ const Admin = () => {
 
     // Analytics inputs
     const [analyticTheaterID, setAnalyticTheaterID] = useState('');
-    const [occupancyData, setOccupancyData] = useState(null);
+    const [occupancyData, setOccupancyData] = useState('30');
+    const [summarizeOption, setSummarizeOption] = useState('Location');
 
     //Discounted Showtimes
     const [discountShowtimes, setDiscountShowtimes] = useState([]);
@@ -68,6 +69,10 @@ const Admin = () => {
         //getTheaterOccupancy()
     }
 
+    function updateSummarizeOption(e) {
+        setSummarizeOption(e.target.value);
+        //getTheaterOccupancy()
+    }
 
     const handleOptionChange = (e) => {
         updateScheduleOption(e);
@@ -590,7 +595,8 @@ const Admin = () => {
     /* ******** ANALYTICS API CALLS ********* */
     // View theater occupancy for the last 30/60/90 days
     const getTheaterOccupancy = () => {
-        fetch(`${host}/api/theater/${analyticTheaterID}/occupancy?${JSON.stringify(viewOption)}`, {
+        fetch(summarizeOption === 'Location' ? `${host}/api/all_location_occupancy` : 
+              summarizeOption === 'Movie' ? `${host}/api/all_movie_occupancy` : null, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -609,20 +615,40 @@ const Admin = () => {
     }
 
     function displayTheaterOccupancy() {
-        if(analyticTheaterID === '' && occupancyData != null) {
-            return <div className="error-message">
-                Error: theater ID is empty
-            </div>
+        if(occupancyData === null) {
+            return
         }
-        else {
-            if(occupancyData === null) {
-                return
-            }
-            // note: use occupancy data here
-            return <div>
-                <p>Total Occupancy: {occupancyData.total_potential}</p>
-                <p>Total used: {occupancyData.total_used}</p>
-            </div>;
+
+        //console.log("DATA:" + JSON.stringify(occupancyData) + " type: " + summarizeOption);
+        //console.log(occupancyData.name);
+        if(summarizeOption === "Location") {
+            return (
+                <div>
+                    {occupancyData.map((data) => (
+                        <div key={data._id}>
+                            <p>Location: {data.name}</p>
+                            <p>Total Potential: {data.occupancy.total_potential}</p>
+                            <p>Total Used: {data.occupancy.total_used}</p>
+                            <hr/>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        else if(summarizeOption === 'Movie') {
+            return (
+                <div>
+                    {occupancyData.map((data) => (
+                        <div key={data._id}>
+                            <img src={data.image} alt={data.title} style={{ maxWidth: '100px' }} />
+                            <p>Title: {data.title}</p>
+                            <p>Total Potential: {data.occupancy.total_potential}</p>
+                            <p>Total Used: {data.occupancy.total_used}</p>
+                            <hr />
+                        </div>
+                    ))}
+                </div>
+            );
         }
     }
 
@@ -643,6 +669,7 @@ const Admin = () => {
     useEffect(() => {
         getDiscountApplicableShowtimes();
     }, [])
+
     function handleAnalyticsUpdate() {
         getTheaterOccupancy();
         displayTheaterOccupancy();
@@ -691,16 +718,6 @@ const Admin = () => {
             <h1 className="title"> Analytics Dashboard</h1>
             <div className="analytics-row">
                 <div className="info-container">
-                    <div className="input-container">
-                        <input
-                            type="text"
-                            required placeholder="Theater ID"
-                            value={analyticTheaterID}
-                            onChange={(e) => setAnalyticTheaterID(e.target.value)}
-                        />
-                    </div>
-                    <br></br>
-                    <Button className="button-style" type="button-primary" onClick={handleAnalyticsUpdate}> Update Display </Button>
                     <h1> Viewing Theater Occupancy for the last: {            
                         <select className="drop-down" value={viewOption} onChange={updateViewOption}>
                             <option value="30">30 days</option>
@@ -708,9 +725,14 @@ const Admin = () => {
                             <option value="90">90 days</option>
                         </select>
                         }
+                        <br></br>summarized by: <select className="drop-down" value={summarizeOption} onChange ={updateSummarizeOption}>
+                            <option value="Location"> Location </option>
+                            <option value="Movie"> Movie </option>
+                        </select>
                     </h1>
-    
-                    <div className="list-box" style={{ maxWidth: "100px", maxHeight: "100px"}}>
+                    <Button className="button-style" type="button-primary" onClick={handleAnalyticsUpdate}> Update Display </Button>
+
+                    <div className="list-box">
                         <p1> {displayTheaterOccupancy()} </p1>
                     </div>
                 </div>
