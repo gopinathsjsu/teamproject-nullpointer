@@ -29,7 +29,7 @@ const Payment = () =>{
 
   useEffect(() => {
     if(user?.id){
-      const convenienceFee = user?.isMember ? 0 : 1.5;
+      const convenienceFee = user?.isMember || paymentItem?.type !== 'movie' ? 0 : 1.5;
       setTicketPrice(paymentItem?.itemCost * numTickets + convenienceFee);
     }
   },[numTickets, user]);

@@ -3,6 +3,7 @@ import Button from '../../Components/Button/Button';
 import React, {useState} from "react";
 // import { dispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { host } from "../../env";
 
 const Register = () => {
   const [username, setUsername]=useState('');
@@ -32,7 +33,7 @@ const Register = () => {
       return;
     }
 
-    fetch("http://localhost:8005/api/create_account", {
+    fetch(`${host}/api/create_account`, {
       method: "POST",
       headers: { "Content-Type": "application/json"},
       body: JSON.stringify(user)
