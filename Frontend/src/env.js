@@ -1,1 +1,1 @@
-export const host = "http://localhost:8005";
+export const host = "http://cmpe-202-elb-853350260.us-east-1.elb.amazonaws.com";
