@@ -175,8 +175,9 @@ def set_token_vars():
                 kwargs["points"] = user_data["points"] if "points" in user_data else ""
 
             except Exception as e:
-                logger.error(f"Token is invalid")
-                return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
+                #logger.error(f"Token is invalid")
+                #return abort(make_response(jsonify({"message": "Token is invalid"}), 401))
+                return f(*args, **kwargs)   #Bad token counts as no token for this
             return f(*args, **kwargs)
         return decorated_function
     return auth_wrapper_func
