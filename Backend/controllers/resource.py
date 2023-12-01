@@ -893,12 +893,22 @@ def get_location_occupancies():
     if not locations:
         return jsonify({"message": "No locations found"}), 404
 
+    op = []
     for location in locations:
-        location["occupancy"] = location_capacity_used(
-            location["_id"], past_days)
+        res = location_capacity_used(location["_id"], past_days)
+        if "total_potential" in res and res["total_potential"] != 0:
+            location["occupancy"] = res
+            op.append(location)
 
-    clean_list(locations)
-    return jsonify(locations), 200
+    clean_list(op)
+    return jsonify(op), 200
+
+    # for location in locations:
+    #     location["occupancy"] = location_capacity_used(
+    #         location["_id"], past_days)
+
+    # clean_list(locations)
+    # return jsonify(locations), 200
 
 
 # Returns all movie occupancies over past number of days
