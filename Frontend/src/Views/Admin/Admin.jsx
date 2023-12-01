@@ -530,7 +530,7 @@ const Admin = () => {
         setErrorMessage("");
         setConfirmMessage("");
         
-        if(theaterName === '' || seatCapacity === '') {
+        if(theaterName === '' && seatCapacity === '') {
             setErrorMessage("Error: requires theater name or seat capacity input");
             return;
         }
