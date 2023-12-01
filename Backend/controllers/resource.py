@@ -800,7 +800,11 @@ def get_movies_by_theater(theater_id):
         return jsonify({"message": "No showtimes for theater found"}), 404
 
     movies = []
+    dup = {}
     for show in showtimes:
+        if str(show["movie_id"]) in dup:
+            continue
+        
         rec = cmpe202_db_client.movies.find_one({
             "_id": show["movie_id"],
             "$or": [
@@ -808,6 +812,8 @@ def get_movies_by_theater(theater_id):
                 {"deleted": False}
             ]
         })
+
+        dup[str(show["movie_id"])] = 1
 
         if rec is not None:
             movies.append(rec)
