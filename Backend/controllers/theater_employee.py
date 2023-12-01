@@ -457,7 +457,7 @@ def insert_showtimes(*args, **kwargs):
     
     if "show_date" in data:
         show_date = jsdate_to_datetime(data["show_date"])
-        show_day = calendar.day_name[jsdate_to_datetime(show_date).weekday()]
+        show_day = calendar.day_name[show_date.weekday()]
     else:
         return abort(make_response(jsonify(error=f"Please Provide Show Date"), 400))
     
