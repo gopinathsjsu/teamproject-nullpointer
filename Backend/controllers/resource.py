@@ -934,8 +934,18 @@ def get_movie_occupancies():
     if not movies:
         return jsonify({"message": "No movie found"}), 404
 
+    op = []
     for movie in movies:
-        movie["occupancy"] = movie_capacity_used(movie["_id"], past_days)
+        res = movie_capacity_used(movie["_id"], past_days)
+        if "total_potential" in res and res["total_potential"] != 0:
+            movie["occupancy"] = res
+            op.append(movie)
 
-    clean_list(movies)
-    return jsonify(movies), 200
+    clean_list(op)
+    return jsonify(op), 200
+
+    # for movie in movies:
+    #     movie["occupancy"] = movie_capacity_used(movie["_id"], past_days)
+
+    # clean_list(movies)
+    # return jsonify(movies), 200
