@@ -720,8 +720,8 @@ def buy_vip(*args, **kwargs):
 
 
 # Returns the showtimes for a given movie
-@resource.route('/api/movie/<movie_id>', methods=['GET'])
-def get_movie_showtimes(movie_id):
+@resource.route('/api/movie/<movie_id>/<theater_id>', methods=['GET'])
+def get_movie_showtimes(movie_id, theater_id):
     movie = cmpe202_db_client.movies.find_one({
         "_id": ObjectId(movie_id),
         "$or": [
@@ -731,8 +731,12 @@ def get_movie_showtimes(movie_id):
     })
     del movie["_id"]
 
+    current_time_plus_three_hours = datetime.utcnow() + timedelta(hours=3)
+
     movie["showtimes"] = list(cmpe202_db_client.showtimes.find({
         "movie_id": ObjectId(movie_id),
+        "theater_id": ObjectId(theater_id),
+        "show_date": {'$gt': current_time_plus_three_hours},
         "$or": [
             {"deleted": {"$exists": False}},
             {"deleted": False}
@@ -789,8 +793,10 @@ def get_upcoming_movies():
 # Returns movies by theater
 @resource.route('/api/theater/<theater_id>/movies', methods=['GET'])
 def get_movies_by_theater(theater_id):
+    current_time_plus_three_hours = datetime.utcnow() + timedelta(hours=3)
     showtimes = list(cmpe202_db_client.showtimes.find({
         "theater_id": ObjectId(theater_id),
+        "show_date": {'$gt': current_time_plus_three_hours},
         "$or": [
             {"deleted": {"$exists": False}},
             {"deleted": False}
@@ -804,7 +810,7 @@ def get_movies_by_theater(theater_id):
     for show in showtimes:
         if str(show["movie_id"]) in dup:
             continue
-        
+
         rec = cmpe202_db_client.movies.find_one({
             "_id": show["movie_id"],
             "$or": [
