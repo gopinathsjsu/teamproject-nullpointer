@@ -21,7 +21,7 @@ const Checkout = () => {
   const[ loading, setLoading ] = useState(true);
 
   const getData = () =>{
-    fetch(`${host}/api/movie/${id}`)
+    fetch(`${host}/api/movie/${id}/${selectedLocationInfo?.id}`)
     .then((resp) => resp.json())
     .then((data) => {
       setShowtimes(data?.showtimes);
