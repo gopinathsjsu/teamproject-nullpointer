@@ -61,9 +61,9 @@ const Navbar = () => {
   }, [selectedTheater])
 
   useEffect(() => {
-    setTheatres(dashboard?.theaters?.filter((theater) => theater?.locationId === selectedLocation?.id));
-    console.warn('222', selectedLocation?.id, dashboard?.theaters?.filter((theater) => theater?.locationId === selectedLocation?.id));
-    setSelectedTheater(dashboard?.theaters?.[0]);
+    const filteredTheaters = dashboard?.theaters?.filter((theater) => theater?.locationId === selectedLocation?.id);
+    setTheatres([...filteredTheaters]);
+    setSelectedTheater(filteredTheaters?.[0]);
     dispatch(setSelectedLocationInfo({...selectedLocation}));
   },[selectedLocation]);
 

@@ -13,22 +13,28 @@ const Dashboard = () => {
   const [currentlyShowing, setCurrentlyShowing] = useState([]);
   const [upcomingMovies, setUpcomingMovies] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [emptyShowtimes, setEmptyShowtimes] = useState(false);
+  const [emptyUpcoming, setEmptyUpcoming] = useState(false);
 
   const getCurrentMovies = () =>{
+    setEmptyShowtimes(false);
     setLoading(true);
     fetch(`${host}/api/theater/${selectedTheaterInfo?.id}/movies`)
     .then((resp) => resp.json())
     .then((data) => {
       setLoading(false);
-      setCurrentlyShowing([...data]);
+      if(data?.message) setEmptyShowtimes(true);
+      else setCurrentlyShowing([...data]);
     })
   }
 
   const getUpcomingMovies = () => {
+    setEmptyUpcoming(false);
     fetch(`${host}/api/upcoming_movies`)
     .then((resp) => resp.json())
     .then((data) => {
-      setUpcomingMovies([...data]);
+      if(data?.message) setEmptyUpcoming(true);
+      else setUpcomingMovies([...data]);
     })
   }
 
@@ -57,7 +63,7 @@ const Dashboard = () => {
               Currently Playing
             </h1>
             <div className="showing-grid">
-              {currentlyShowing?.map((movie, index) => (
+              {!emptyShowtimes ? currentlyShowing?.map((movie, index) => (
                 <div className="movie" key={index}>
                   <img className="movie-image" src={movie.image} alt=''/>
                   <h3 className="movie-title">
@@ -65,7 +71,10 @@ const Dashboard = () => {
                   </h3>
                   <Button className="movie-book" onClick={() => handleBook(movie)} type={'button-primary'}>Book</Button>
                 </div>
-              ))}
+              )): <h2>
+                    You've caught us early, come back later to check some shows
+                  </h2>
+              }
             </div>
           </div>
           <div className="showing-container">
@@ -73,14 +82,17 @@ const Dashboard = () => {
               Upcoming Movies
             </h1>
             <div className="showing-grid">
-              {upcomingMovies?.map((movie, index) => (
+            {!emptyUpcoming ? upcomingMovies?.map((movie, index) => (
                 <div className="movie" key={index}>
                   <img className="movie-image" src={movie.image} alt=''/>
                   <h3 className="movie-title">
                     {movie.title}
                   </h3>
                 </div>
-              ))}
+              )): <h2 >
+                    You've caught us early, come back later to check some shows
+                  </h2>
+              }
             </div>
           </div>
         </div>
