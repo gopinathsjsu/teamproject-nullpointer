@@ -801,13 +801,16 @@ def get_movies_by_theater(theater_id):
 
     movies = []
     for show in showtimes:
-        movies.append(cmpe202_db_client.movies.find_one({
+        rec = cmpe202_db_client.movies.find_one({
             "_id": show["movie_id"],
             "$or": [
                 {"deleted": {"$exists": False}},
                 {"deleted": False}
             ]
-        }))
+        })
+
+        if rec is not None:
+            movies.append(rec)
 
     clean_list(movies)
     return jsonify(movies), 200
