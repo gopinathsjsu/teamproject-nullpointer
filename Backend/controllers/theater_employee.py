@@ -275,10 +275,10 @@ def update_theater(theater_id, *args, **kwargs):
 
     update_data = {}
 
-    if "name" in data:
+    if "name" in data and data["name"] != "":
         update_data["name"] = data["name"]
 
-    if "seating_capacity" in data:
+    if "seating_capacity" in data and data["seating_capacity"] != "":
         update_data["seating_capacity"] = data["seating_capacity"]
 
     cmpe202_db_client.theaters.update_one(
