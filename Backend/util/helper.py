@@ -23,7 +23,7 @@ def fetch_user_details(username):
         ]
     })
 
-    if "isAdmin" not in rec:  # POST_PURGE remove
+    if rec and "isAdmin" not in rec:  # POST_PURGE remove
             rec["isAdmin"] = rec["is_admin"]
 
     return rec
