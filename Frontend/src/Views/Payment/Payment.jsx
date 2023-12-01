@@ -6,7 +6,7 @@ import './Payment.scss';
 import { useEffect, useState } from 'react';
 import { host } from '../../env';
 import { useDispatch, useSelector } from 'react-redux';
-import userReducer from '../../Redux/userReducer';
+import { login } from '../../Redux/userReducer';
 import Loader from '../../Components/Loader/Loader';
 
 const Payment = () =>{
@@ -18,7 +18,7 @@ const Payment = () =>{
   const [loading, setLoading] = useState(false);
   const { user } = useSelector((state) => state);
   const dispatch = useDispatch();
-  const [redeemPoints, setRedeemPoints] = useState();
+  const [redeemPoints, setRedeemPoints] = useState(0);
   const [ticketPrice, setTicketPrice] = useState();
   const [total, setTotal] = useState();
 
@@ -26,12 +26,16 @@ const Payment = () =>{
   const [cardName, setCardName] = useState('');
   const [cardSecurity, setCardSecurity] = useState();
   const [cardExpiry, setExpiry] = useState('');
+  const { state: paymentItem } = location;
 
   useEffect(() => {
+    let convenienceFee;
     if(user?.id){
-      const convenienceFee = user?.isMember || paymentItem?.type !== 'movie' ? 0 : 1.5;
-      setTicketPrice(paymentItem?.itemCost * numTickets + convenienceFee);
+      convenienceFee = (user?.isMember || paymentItem?.type !== 'movie') ? 0 : 1.5;
+    } else{
+      convenienceFee = 1.5;
     }
+    setTicketPrice(paymentItem?.itemCost * numTickets + convenienceFee);
   },[numTickets, user]);
 
   useEffect(() => {
@@ -70,12 +74,15 @@ const Payment = () =>{
 
   const buyTicket = () => {
     setLoading(true);
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if(localStorage.getItem('x-access-token')){
+      headers['x-access-token'] = localStorage.getItem('x-access-token')
+    }
     fetch(`${host}/api/buy_ticket`, {
       method: 'POST',
-      headers:{
-        'Content-Type': 'application/json',
-        'x-access-token': localStorage.getItem('x-access-token')
-      },
+      headers: headers,
       body:JSON.stringify({
         user_id: user?.id,
         ticket_count: Number(numTickets),
@@ -115,8 +122,10 @@ const Payment = () =>{
     })
     .then(_ => {
       setSuccess("Membership bought successfully, navigating to home");
-      dispatch(userReducer({...user, isMember: true}));
-      setTimeout(() => navigate('/'), 2000);
+      let updatedUser = {...user};
+      updatedUser['isMember'] = true;
+      dispatch(login({...updatedUser}));
+      setTimeout(() => navigate(-1), 2000);
     })
     .catch(error => {
       setError(error?.message);
@@ -147,7 +156,6 @@ const Payment = () =>{
     else
       buyMembership();
   }
-  const { state: paymentItem } = location;
   return(
     <>
       {

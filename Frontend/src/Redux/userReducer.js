@@ -7,7 +7,7 @@ export const user = createSlice({
     login: (_, action) =>{
       const user = {
         ...action.payload,
-        id: action.payload._id,
+        id: action?.payload?._id || action?.payload?.id,
       }
       delete user._id;
       return user;
