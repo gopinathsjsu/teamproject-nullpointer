@@ -646,7 +646,7 @@ def delete_ticket(ticket_id, *args, **kwargs):
                 {"deleted": False}
             ]},
             {"$set": {
-                "points": kwargs["points"] - ticket["paid"]
+                "points": max(0, kwargs["points"] - ticket["paid"])
             }
         })
 
