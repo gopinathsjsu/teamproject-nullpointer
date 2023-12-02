@@ -25,6 +25,12 @@ def fetch_user_details(username):
 
     if rec and "isAdmin" not in rec:  # POST_PURGE remove
             rec["isAdmin"] = rec["is_admin"]
+    
+    if rec and "is_member" not in rec:
+        rec["isMember"] = False
+    
+    if "is_member" in rec:
+        rec["isMember"] = rec["is_member"]
 
     return rec
 
