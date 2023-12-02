@@ -86,7 +86,9 @@ const Payment = () =>{
       body:JSON.stringify({
         user_id: user?.id,
         ticket_count: Number(numTickets),
-        showtime_id: paymentItem?.id, 
+        showtime_id: paymentItem?.id,
+        use_reward: redeemPoints > 0 ? true : false, 
+        points_used: redeemPoints,
       })
     }).then(async (response) => {
       if(response.ok)
