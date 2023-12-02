@@ -54,7 +54,6 @@ Movie theater website prototype application that emulates movie websites such as
   * Buy membership
 * Payment Successful Page
   * Shows ticket details
-  * Shows membership details
   
 * Accounts Page
   * View user information (name, rewards points, membership status)
