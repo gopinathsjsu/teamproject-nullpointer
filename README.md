@@ -78,7 +78,7 @@ Tools: React.jsx, Redux, Flask API
 <br>
 DB: MongoDB
 <br>
-Deployment: EC2, S3
+Deployment: ELB, EC2, S3.
 
 ## Design Decisions
 
@@ -89,6 +89,11 @@ Additionally, Flask API is light-weight and starting an application is fairly qu
 ### Design choices for using React.jsx and Redux
 React.jsx has large community support and it is used by large corporations to make the frontend run quicker (courtesy of virtual DOM).
 Redux was chosen since it gives us centralized state management throughout the application.
+
+### Design choice for EC2 and S3
+S3 - Since React is a single-page application and lightweight, hosting it via an index.html on S3 is easier, and S3 has 99.999% availability.  
+EC2 - Since we needed more than one server to be hosted and balanced, Ec2 was the obvious choice since it emulates our local machines and is much more powerful with large feature sets and availability.  
+ELB - Since we need to balance the servers based on their health checks we needed a load balancer and further ELB's work well with EC2.  
 
 ## Diagrams
 
