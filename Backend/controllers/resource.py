@@ -381,14 +381,14 @@ def buy_tickets(*args, **kwargs):
             cmpe202_db_client.users.update_one(
                 {"_id": user_id},
                 {"$set": {
-                    "points": kwargs["points"] - ticket["paid"]
+                    "points": max(0, kwargs["points"] - ticket["paid"])
                 }
                 })
         else:
             cmpe202_db_client.users.update_one(
                 {"_id": user_id},
                 {"$set": {
-                    "points": kwargs["points"] + ticket["paid"]
+                    "points": max(0, kwargs["points"] - ticket["paid"])
                 }
                 })
 
