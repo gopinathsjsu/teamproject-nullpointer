@@ -375,8 +375,8 @@ def buy_tickets(*args, **kwargs):
         if kwargs["is_member"]:
             ticket["paid"] -= fee
         if "use_reward" in val and val["use_reward"]:
-            if kwargs["points"] < ticket["paid"]:
-                return jsonify({"message": "Not enough points, can't afford", "price": ticket["paid"]}), 409
+            # if kwargs["points"] < ticket["paid"]:
+            #     return jsonify({"message": "Not enough points, can't afford", "price": ticket["paid"]}), 409
             
             points_used = 0
             if "points_used" in val:
@@ -385,16 +385,20 @@ def buy_tickets(*args, **kwargs):
             cmpe202_db_client.users.update_one(
                 {"_id": user_id},
                 {"$set": {
-                    "points": max(0, kwargs["points"] - points_used)
+                    "points": max(0, kwargs["points"] - points_used + (2 * ticket_count))
                 }
                 })
+            ticket["points_used"] = points_used
+            ticket["points_gained"] = 2 * ticket_count
         else:
             cmpe202_db_client.users.update_one(
                 {"_id": user_id},
                 {"$set": {
-                    "points": max(0, kwargs["points"] - ticket["paid"])
+                    "points": max(0, kwargs["points"] + (2 * ticket_count))
                 }
                 })
+            ticket["points_used"] = 0
+            ticket["points_gained"] = 2 * ticket_count
 
     ticket_id = cmpe202_db_client.tickets.insert_one(ticket).inserted_id
     ticket["_id"] = ticket_id
@@ -643,6 +647,15 @@ def delete_ticket(ticket_id, *args, **kwargs):
         return jsonify({"message": "Can't refund tickets for showings that have already begun"}), 409
 
     if (cmpe202_db_client.tickets.delete_one({"user_id": kwargs["user_id"], "_id": ObjectId(ticket_id)}).deleted_count):
+        
+        points_gained = 0
+        if "points_gained" in ticket:
+            points_gained = ticket["points_gained"]
+        
+        points_used = 0
+        if "points_used" in ticket:
+            points_used = ticket["points_used"]
+
         cmpe202_db_client.users.update_one({
             "_id": kwargs["user_id"],
             "$or": [
@@ -650,7 +663,8 @@ def delete_ticket(ticket_id, *args, **kwargs):
                 {"deleted": False}
             ]},
             {"$set": {
-                "points": max(0, kwargs["points"] - ticket["paid"])
+                # "points": max(0, kwargs["points"] - ticket["paid"])
+                "points": max(0, kwargs["points"] - points_gained + points_used)
             }
         })
 
@@ -812,6 +826,22 @@ def get_movies_by_theater(theater_id):
     movies = []
     dup = {}
     for show in showtimes:
+        total_ticket_count = 0
+        cursor = cmpe202_db_client.tickets.find({"showtime_id": show["_id"]})
+        for rec in cursor:
+            try:
+                total_ticket_count += rec["ticket_count"]
+            except:
+                pass
+        try:
+            theater_record = cmpe202_db_client.theaters.find_one({"_id": show["theater_id"]})
+            seating_capacity = theater_record["seating_capacity"]
+        except:
+            seating_capacity = 0
+        print(abs(total_ticket_count - seating_capacity), str(show["_id"]), show["movie_id"])
+        if (abs(total_ticket_count - seating_capacity)) == 0:
+            continue
+
         if str(show["movie_id"]) in dup:
             continue
 
