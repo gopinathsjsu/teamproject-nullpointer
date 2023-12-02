@@ -377,11 +377,15 @@ def buy_tickets(*args, **kwargs):
         if "use_reward" in val and val["use_reward"]:
             if kwargs["points"] < ticket["paid"]:
                 return jsonify({"message": "Not enough points, can't afford", "price": ticket["paid"]}), 409
+            
+            points_used = 0
+            if "points_used" in val:
+                points_used = val["points_used"]
 
             cmpe202_db_client.users.update_one(
                 {"_id": user_id},
                 {"$set": {
-                    "points": max(0, kwargs["points"] - ticket["paid"])
+                    "points": max(0, kwargs["points"] - points_used)
                 }
                 })
         else:
