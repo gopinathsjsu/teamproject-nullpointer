@@ -81,6 +81,7 @@ def register():
         "password": hashed_password,
         "is_admin": False,
         "points": 0,
+        "is_member": False,
         "vip_until": datetime.utcnow(),
     }
 
