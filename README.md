@@ -1,10 +1,41 @@
 # NullPointer
 Movie theater website prototype application that emulates movie websites such as AMC Theatres. This includes being able to register/sign in, buy/refund tickets, view account information, and view ticket history.
 ## Team Members
-1. Dimitar Dimitrov
-2. Subramanya Jagadeesh
-3. Connor Pietrasik
-4. Rajath Rajaram
+1. Dimitar Dimitrov (014698892)
+2. Subramanya Jagadeesh (016218293)
+3. Connor Pietrasik (015126007)
+4. Rajath Rajaram (017426097)
+
+## Summary of Areas of Contribution
+### Dimitar Dimitrov
+* Login/Registration early API development + integration and front end UI implementation
+* Account page UI implementation and API integration
+* Admin page UI implementation and API integration
+* Figma UI wireframe design
+* Class UML diagram, component diagram, and README.md file
+### Subramanya Jagadeesh
+* Initial Frontend Repo setup
+* UI for  - Home, Checkout, Payment, Ticket
+* API Integration - Home, Checkout, Payment, Ticket
+* Redux for frontend
+* Checkout Figma Design
+* EC2, ELB, S3 creation, configuration and deployments for each build
+* Class UML diagram, component diagram, deployment diagram and README.md file
+### Connor Pietrasik
+* Some authentication improvements
+* Hashing passwords
+* The user backend stuff
+* Refactored db schema to remove duplicate data
+* Added discount API based on date, day, and time
+* Class UML diagram, component diagram, and README.md file
+### Rajath Rajaram
+* Initialized MongoDB on cloud
+* Initialized Flask and repo
+* Admin API development
+* Added logging and authentication
+* Bash scripts
+* Class UML diagram, component diagram, and README.md file
+
 
 ## Feature Set
 * Home Page
@@ -75,6 +106,8 @@ Deployment Diagram
 ## Project Journal
 ### Weekly Scrum Report (Includes backlog and burndown charts)
 [Sprints(1-5) Folder](https://drive.google.com/drive/folders/1Mn1kzlfYmrABU5Cru8pbD2Y9ljJ0Hg4A?usp=sharing)
+### Sprint Taskboard:  
+[Trello Invite Link](https://trello.com/invite/workspace74518349/ATTI3f2948a0cbf3d49151f5aab334111c6a0EE9ED79)
 ### XP Values Used
 Simplicity - Team started with what was needed for each sprint and delivered the same (nothing more or nothing less).
 <br>
