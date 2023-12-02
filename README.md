@@ -106,7 +106,7 @@ Deployment Diagram
 ## Project Journal
 ### Weekly Scrum Report (Includes backlog and burndown charts)
 [Sprints(1-5) Folder](https://drive.google.com/drive/folders/1Mn1kzlfYmrABU5Cru8pbD2Y9ljJ0Hg4A?usp=sharing)
-### Sprint Taskboard:  
+### Sprint Taskboard
 [Trello Invite Link](https://trello.com/invite/workspace74518349/ATTI3f2948a0cbf3d49151f5aab334111c6a0EE9ED79)
 ### XP Values Used
 Simplicity - Team started with what was needed for each sprint and delivered the same (nothing more or nothing less).
