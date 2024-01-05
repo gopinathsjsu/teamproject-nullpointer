@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"6fed28038d8b485f92e73cf3d159e7ac","collectionName":"multiplexes","type":"collection"}

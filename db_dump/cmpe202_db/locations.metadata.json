@@ -1,0 +1,1 @@
+{"options":{"capped":true,"size":{"$numberInt":"1024"}},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"8db4d46e3c4b4e719a95b434fb885a44","collectionName":"locations","type":"collection"}
